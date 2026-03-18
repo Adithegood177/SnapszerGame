@@ -31,6 +31,14 @@ namespace SnapszerGame.game
         private bool _enKovetkezem;
         public bool EnKovetkezem { get => _enKovetkezem; set { _enKovetkezem = value; OnPropertyChanged(nameof(EnKovetkezem)); } }
 
+        private bool _lehetBemondani;
+        public bool LehetBemondani { get => _lehetBemondani; set { _lehetBemondani = value; OnPropertyChanged(nameof(LehetBemondani)); } }
+
+        private bool _pakliLezarva;
+        public bool PakliLezarva { get => _pakliLezarva; set { _pakliLezarva = value; OnPropertyChanged(nameof(PakliLezarva)); } }
+
+        private SnapszerLogic _logic = new SnapszerLogic();
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
@@ -70,6 +78,44 @@ namespace SnapszerGame.game
             AduSzin = valasztottSzin;
             AduValasztasFolyamatban = false;
             EnKovetkezem = false; // Én választottam, a gép jön lerakni
+        }
+
+        // Pakli lezárása (gomb hívja, vagy automatikusan, ha elfogynak a lapok)
+        public void PakliLezarasa()
+        {
+            PakliLezarva = true;
+            // Ha lezárjuk, onnantól szigorúbb szabályok élnek, amit a SnapszerLogic már lekezel
+        }
+
+        // Megvizsgáljuk, hogy jelen helyzetben lehet-e bemondani húszat / negyvenet
+        public void FrissitBemondasLehetoseg()
+        {
+            // Csak akkor mondhatunk be, ha nálunk van a hívás joga (és még van lapunk!)
+            if (EnKovetkezem)
+            {
+                var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList());
+                LehetBemondani = bemondasok.Any();
+            }
+            else
+            {
+                LehetBemondani = false;
+            }
+        }
+
+        // A játékos rákattintott a Bemondás (20/40) gombra
+        public void JatekosBemond(Szin bemondottSzin)
+        {
+            // Csak akkor ér, ha mi jövünk hívással
+            if (EnKovetkezem && _logic.LehetsegesBemondasok(JatekosLapok).Contains(bemondottSzin))
+            {
+                int szerzettPont = _logic.BemondasErteke(bemondottSzin, AduSzin);
+                // Pontot csak akkor kaphat, ha volt már ütése a játszmában,
+                // esetleg "ideiglenes" pontként felírható, és mikor beüt, akkor adódik hozzá ténylegesen.
+                JatekosPont += szerzettPont; 
+
+                // FRISSÍTÉS: ha bemondta, gomb inaktív
+                LehetBemondani = false;
+            }
         }
     }
 }

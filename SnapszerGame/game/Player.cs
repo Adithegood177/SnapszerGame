@@ -7,7 +7,7 @@ using System.Text;
 namespace SnapszerGame.game
 {
     public class Player : INotifyPropertyChanged
-    { //s
+    { //comment test
         public string Name { get; set; }
         public ObservableCollection<Card> Hand { get; set; }
         private int _score;

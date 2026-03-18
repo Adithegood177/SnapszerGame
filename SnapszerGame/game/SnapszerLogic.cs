@@ -7,57 +7,57 @@ namespace SnapszerGame.game
 {
     public class SnapszerLogic
     {
-        // Kiszámolja, ki nyeri az adott ütést
+        // Ütés nyertesének eldöntése
         public Player GetWinnerOfTrick(Card hivottLap, Card valaszLap, Player hivoJatekos, Player valaszoloJatekos, Szin aduSzin)
         {
-            // Ha a válaszoló adut (tromfot) rakott, de a hívás nem adu volt, akkor a válaszoló nyer
+            // Válaszoló aduzott (felülütötte a nem-adut)
             if (valaszLap.szin == aduSzin && hivottLap.szin != aduSzin)
             {
                 return valaszoloJatekos;
             }
 
-            // Ha azonos színűeket raktak, a nagyobb értékű lap viszi az ütést
+            // Színre színt, a nagyobb viszi
             if (hivottLap.szin == valaszLap.szin)
             {
                 return (hivottLap.pont > valaszLap.pont) ? hivoJatekos : valaszoloJatekos;
             }
 
-            // Minden más esetben, ha valaszlap nem azonos színű és nem is adu, akkor a hívó játékos viszi
+            // Különben a hívó viszi (kisebb dobás más színből)
             return hivoJatekos;
         }
 
-        // Eldönti, hogy egy lapot szabályosan le lehet-e rakni
+        // Szabványos lerakás validálása
         public bool SzabalyosKartyaRakas(Card lerakandoKartya, Card hivottLap, Szin aduSzin, bool pakliLezarva, IEnumerable<Card> jatekosKezeben)
         {
-            // Ha mi kezdjük az ütést , bármit rakhatunk
+            // Saját hívás, bármi lerakható
             if (hivottLap == null)
             {
                 return true;
             }
 
-            // Ha nincs lezárva a talon (van még húzópakli), nincs semmilyen kényszer
+            // Nyitott talonnál nincsenek kényszerek
             if (!pakliLezarva)
             {
                 return true;
             }
 
-            // --- INNENTŐL SZÍNKÉNYSZER, ÜTÉSKÉNYSZER ÉS ADUKÉNYSZER VAN (mert lezárták a talont vagy elfogyott) ---
+            // --- LEZÁRT TALON: Színkényszer, ütéskényszer, adukényszer ---
 
             bool vanHivottSzin = jatekosKezeben.Any(lap => lap.szin == hivottLap.szin);
 
             if (vanHivottSzin)
             {
-                // Színkényszer: színre színt kell adni
+                // Színkényszer
                 if (lerakandoKartya.szin != hivottLap.szin) return false;
 
-                // Ütéskényszer (Felülütési kényszer): ha van nagyobb lap a hívott színből, akkor azt kell rakni
+                // Ütéskényszer
                 bool vanNagyobbLapa = jatekosKezeben.Any(lap => lap.szin == hivottLap.szin && lap.pont > hivottLap.pont);
                 if (vanNagyobbLapa && lerakandoKartya.pont < hivottLap.pont) return false;
 
                 return true;
             }
 
-            // Adukényszer: ha nincs a hívott színből lapod, de van adud, kötelező azt tenni
+            // Adukényszer
             bool vanAduSzin = jatekosKezeben.Any(lap => lap.szin == aduSzin);
             if (vanAduSzin)
             {
@@ -65,14 +65,11 @@ namespace SnapszerGame.game
                 return true;
             }
 
-            // Ha se hívott színünk, se adunk nincsen, akkor bármit ledobhatunk
+            // Nincs szín, nincs adu -> szabad dobás
             return true;
         }
 
-        // Visszaadja, hogy milyen színekből tudunk bemondani (Húsz / Negyven)
-        // 20 pont: Sima színű Király + Felső pár.
-        // 40 pont: Adu színű Király + Felső pár.
-        // Ezt a metódust a ViewModelből érdemes hívni, amikor a játékos következik hívással.
+        // Kinyeri az elérhető bemondásokat (Király+Felső párok)
         public List<Szin> LehetsegesBemondasok(IEnumerable<Card> jatekosKezeben)
         {
             var bemondasok = new List<Szin>();
@@ -92,7 +89,7 @@ namespace SnapszerGame.game
             return bemondasok;
         }
 
-        // Kiszámolja egy bemondás értékét (húsz vagy negyven)
+        // Bemondás pontértéke (sima=20, adu=40)
         public int BemondasErteke(Szin bemondottSzin, Szin aduSzin)
         {
             return (bemondottSzin == aduSzin) ? 40 : 20;

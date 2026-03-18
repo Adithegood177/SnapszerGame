@@ -10,7 +10,7 @@ namespace SnapszerGame.game
 
         public KartyaCsomag()
         {
-            // Legenerálja a 24 lapot
+            // 24 lap generálása
             foreach (Szin s in Enum.GetValues(typeof(Szin)))
             {
                 foreach (Ertek e in Enum.GetValues(typeof(Ertek)))
@@ -28,7 +28,7 @@ namespace SnapszerGame.game
 
         public Card Huzas()
         {
-            if (lapok.Count == 0) return null; // Ha elfogyott a pakli
+            if (lapok.Count == 0) return null; // Pakli üres
             var lap = lapok[0];
             lapok.RemoveAt(0);
             return lap;

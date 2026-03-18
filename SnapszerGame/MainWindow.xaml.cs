@@ -5,22 +5,21 @@ namespace SnapszerGame
 {
     public partial class MainWindow : Window
     {
-        // Létrehozzuk a ViewModel-t
         GameViewModel vm = new GameViewModel();
 
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = vm; // Összekötjük a grafikát a logikával
+            this.DataContext = vm; // DataContext összekötése
         }
 
-        // Játék indítása gomb
+        // Start gomb handler
         private void StartGomb_Click(object sender, RoutedEventArgs e)
         {
             vm.JatekInditasa();
         }
 
-        // A 4 adu választó gomb eseménye
+        // Adu választó gombok
         private void PirosGomb_Click(object sender, RoutedEventArgs e)
         {
             vm.JatekosAdutValaszt(Szin.Piros);

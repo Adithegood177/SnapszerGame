@@ -44,53 +44,53 @@ namespace SnapszerGame.game
 
         public void JatekInditasa()
         {
+            // Alaphelyzet
             Pakli = new KartyaCsomag();
             Pakli.PakliKeveres();
             JatekosLapok.Clear();
             EllensegLapok.Clear();
 
-            // 5-5 lap osztása
+            // 5 lap fejenként
             for (int i = 0; i < 5; i++)
             {
                 JatekosLapok.Add(Pakli.Huzas());
                 EllensegLapok.Add(Pakli.Huzas());
             }
 
-            // Sorsolás és adu választás indítása
+            // Kezdő játékos sorsolása, adu választás
             Random rnd = new Random();
             bool enKezdek = rnd.Next(2) == 0;
 
             if (enKezdek)
             {
-                AduValasztasFolyamatban = true; // Én jövök, várjuk a gombnyomást
+                AduValasztasFolyamatban = true; // Játékos választ adut
             }
             else
             {
                 AduValasztasFolyamatban = false;
-                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; // Gép választ
-                EnKovetkezem = true; // Gép választott, én jövök lerakni
+                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; // Gép választ adut
+                EnKovetkezem = true; // Gép választott, játékos jön
             }
         }
 
-        // Ezt hívják majd a gombok
+        // Játékos választ adut (UI hívja)
         public void JatekosAdutValaszt(Szin valasztottSzin)
         {
             AduSzin = valasztottSzin;
             AduValasztasFolyamatban = false;
-            EnKovetkezem = false; // Én választottam, a gép jön lerakni
+            EnKovetkezem = false; // Gép jön hívással
         }
 
-        // Pakli lezárása (gomb hívja, vagy automatikusan, ha elfogynak a lapok)
+        // Pakli lezárása (gomb vagy üres pakli esetén)
         public void PakliLezarasa()
         {
-            PakliLezarva = true;
-            // Ha lezárjuk, onnantól szigorúbb szabályok élnek, amit a SnapszerLogic már lekezel
+            PakliLezarva = true; // Szigorított szabályok élesítése
         }
 
-        // Megvizsgáljuk, hogy jelen helyzetben lehet-e bemondani húszat / negyvenet
+        // Bemondás lehetőségének vizsgálata (UI frissítés)
         public void FrissitBemondasLehetoseg()
         {
-            // Csak akkor mondhatunk be, ha nálunk van a hívás joga (és még van lapunk!)
+            // Csak saját hívásnál mondhatunk be
             if (EnKovetkezem)
             {
                 var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList());
@@ -102,18 +102,17 @@ namespace SnapszerGame.game
             }
         }
 
-        // A játékos rákattintott a Bemondás (20/40) gombra
+        // 20/40 bemondás kezelése (UI gomb)
         public void JatekosBemond(Szin bemondottSzin)
         {
-            // Csak akkor ér, ha mi jövünk hívással
+            // Validáció: csak saját körben és ha van mit bemondani
             if (EnKovetkezem && _logic.LehetsegesBemondasok(JatekosLapok).Contains(bemondottSzin))
             {
                 int szerzettPont = _logic.BemondasErteke(bemondottSzin, AduSzin);
-                // Pontot csak akkor kaphat, ha volt már ütése a játszmában,
-                // esetleg "ideiglenes" pontként felírható, és mikor beüt, akkor adódik hozzá ténylegesen.
+                // TODO: Pontokat csak az első ütés után lehet jóváírni ténylegesen
                 JatekosPont += szerzettPont; 
 
-                // FRISSÍTÉS: ha bemondta, gomb inaktív
+                // Gomb letiltása bemondás után
                 LehetBemondani = false;
             }
         }

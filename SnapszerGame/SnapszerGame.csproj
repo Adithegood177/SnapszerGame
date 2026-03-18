@@ -8,4 +8,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="szinek\makk.png" />
+    <None Remove="szinek\piros.png" />
+    <None Remove="szinek\tok.png" />
+    <None Remove="szinek\zold.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="szinek\makk.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="szinek\piros.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="szinek\tok.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="szinek\zold.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 </Project>

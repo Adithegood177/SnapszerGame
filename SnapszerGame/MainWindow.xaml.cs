@@ -39,5 +39,23 @@ namespace SnapszerGame
         {
             vm.JatekosAdutValaszt(Szin.Tok);
         }
+
+        // Kilépés menü
+        private void KilepesMenu_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        // Kilépés gomb
+        private void KilepesGomb_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        // Vissza gomb a főmenübe
+        private void VisszaGomb_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implementáld a visszatérést, pl. folyamatok leállítása vagy UI módosítás
+        }
     }
 }

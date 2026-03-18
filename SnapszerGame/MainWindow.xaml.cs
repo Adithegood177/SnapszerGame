@@ -17,27 +17,17 @@ namespace SnapszerGame
         private void StartGomb_Click(object sender, RoutedEventArgs e)
         {
             vm.JatekInditasa();
-        }
 
-        // Adu választó gombok
-        private void PirosGomb_Click(object sender, RoutedEventArgs e)
-        {
-            vm.JatekosAdutValaszt(Szin.Piros);
-        }
+            if (vm.AduValasztasFolyamatban)
+            {
+                AduValasztoWindow aduAblak = new AduValasztoWindow();
+                aduAblak.Owner = this;
 
-        private void ZoldGomb_Click(object sender, RoutedEventArgs e)
-        {
-            vm.JatekosAdutValaszt(Szin.Zold);
-        }
-
-        private void MakkGomb_Click(object sender, RoutedEventArgs e)
-        {
-            vm.JatekosAdutValaszt(Szin.Makk);
-        }
-
-        private void TokGomb_Click(object sender, RoutedEventArgs e)
-        {
-            vm.JatekosAdutValaszt(Szin.Tok);
+                if (aduAblak.ShowDialog() == true)
+                {
+                    vm.JatekosAdutValaszt(aduAblak.ValasztottAdu);
+                }
+            }
         }
 
         // Kilépés menü
@@ -50,12 +40,6 @@ namespace SnapszerGame
         private void KilepesGomb_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
-        }
-
-        // Vissza gomb a főmenübe
-        private void VisszaGomb_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: Implementáld a visszatérést, pl. folyamatok leállítása vagy UI módosítás
         }
     }
 }

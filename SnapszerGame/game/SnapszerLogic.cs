@@ -18,7 +18,7 @@ namespace SnapszerGame.game
             }
            
         }
-        /public bool SzabalyosKartyaRakas(Card lerakandoKartya, Player jatekos, Card hivottLap, Card felforditottLap, bool pakliLezarva)
+        public bool SzabalyosKartyaRakas(Card lerakandoKartya, Player jatekos, Card hivottLap, Card felforditottLap, bool pakliLezarva)
         {
             if (lerakandoKartya.szin != hivottLap.szin)
             {

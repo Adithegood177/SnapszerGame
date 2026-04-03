@@ -30,4 +30,10 @@
     </Resource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="szinek\**\*" />
+    <Resource Include="kartyak\**\*" />
+    <Resource Include="kepek\**\*" />
+  </ItemGroup>
+
 </Project>

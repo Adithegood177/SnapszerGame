@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 
 namespace SnapszerGame.game
 {
@@ -37,39 +38,61 @@ namespace SnapszerGame.game
         private bool _pakliLezarva;
         public bool PakliLezarva { get => _pakliLezarva; set { _pakliLezarva = value; OnPropertyChanged(nameof(PakliLezarva)); } }
 
+        // New: status message shown in UI
+        private string _statuszUzenet = string.Empty;
+        public string StatuszUzenet { get => _statuszUzenet; set { _statuszUzenet = value; OnPropertyChanged(nameof(StatuszUzenet)); } }
+
+        // New: main menu visibility binding (in MainWindow)
+        private Visibility _fomenLathato = Visibility.Visible;
+        public Visibility FomenLathato { get => _fomenLathato; set { _fomenLathato = value; OnPropertyChanged(nameof(FomenLathato)); } }
+
         private SnapszerLogic _logic = new SnapszerLogic();
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        public void JatekInditasa()
+        // Prepare game state for dealing; returns true if player will choose adu (player starts)
+        public bool PrepareGameStart()
         {
-            // Alaphelyzet
             Pakli = new KartyaCsomag();
             Pakli.PakliKeveres();
             JatekosLapok.Clear();
             EllensegLapok.Clear();
 
-            // 5 lap fejenként
+            Random rnd = new Random();
+            bool enKezdek = rnd.Next(2) == 0;
+
+            // Reset state
+            AduValasztasFolyamatban = false;
+            EnKovetkezem = false;
+            StatuszUzenet = string.Empty;
+
+            return enKezdek;
+        }
+
+        // Backwards-compatible immediate start (no animation) kept for other callers
+        public void JatekInditasa()
+        {
+            bool enKezdek = PrepareGameStart();
+
+            // Deal immediately 5 cards per hand
             for (int i = 0; i < 5; i++)
             {
                 JatekosLapok.Add(Pakli.Huzas());
                 EllensegLapok.Add(Pakli.Huzas());
             }
 
-            // Kezdő játékos sorsolása, adu választás
-            Random rnd = new Random();
-            bool enKezdek = rnd.Next(2) == 0;
-
             if (enKezdek)
             {
                 AduValasztasFolyamatban = true; // Játékos választ adut
+                StatuszUzenet = "Válassz adut";
             }
             else
             {
                 AduValasztasFolyamatban = false;
                 AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; // Gép választ adut
                 EnKovetkezem = true; // Gép választott, játékos jön
+                StatuszUzenet = "A gép választott adut";
             }
         }
 
@@ -79,6 +102,7 @@ namespace SnapszerGame.game
             AduSzin = valasztottSzin;
             AduValasztasFolyamatban = false;
             EnKovetkezem = false; // Gép jön hívással
+            StatuszUzenet = string.Empty;
         }
 
         // Pakli lezárása (gomb vagy üres pakli esetén)

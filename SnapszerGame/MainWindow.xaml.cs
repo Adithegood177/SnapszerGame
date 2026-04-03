@@ -14,20 +14,21 @@ namespace SnapszerGame
         }
 
         // Start gomb handler
-        private void StartGomb_Click(object sender, RoutedEventArgs e)
+        private async void StartGomb_Click(object sender, RoutedEventArgs e)
         {
-            vm.JatekInditasa();
+            // Prepare deck and get who starts
+            bool playerStarts = vm.PrepareGameStart();
 
-            if (vm.AduValasztasFolyamatban)
-            {
-                AduValasztoWindow aduAblak = new AduValasztoWindow();
-                aduAblak.Owner = this;
+            // Hide main menu
+            vm.FomenLathato = Visibility.Collapsed;
 
-                if (aduAblak.ShowDialog() == true)
-                {
-                    vm.JatekosAdutValaszt(aduAblak.ValasztottAdu);
-                }
-            }
+            // Open dedicated game window
+            GameWindow gw = new GameWindow(vm);
+            gw.Owner = this;
+            gw.Show();
+
+            // Start dealing animation in the GameWindow
+            await gw.StartDealing(playerStarts);
         }
 
         // Kilépés menü

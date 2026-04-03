@@ -8,7 +8,6 @@
 
 	<Window.Resources>
 
-		<!-- Menü gomb stílus -->
 		<Style x:Key="MenuGombStilus" TargetType="Button">
 			<Setter Property="Background" Value="#8B1A1A"/>
 			<Setter Property="Foreground" Value="#F5DEB3"/>
@@ -44,7 +43,6 @@
 			</Setter>
 		</Style>
 
-		<!-- Adu kártya gomb stílus -->
 		<Style x:Key="AduGombStilus" TargetType="Button">
 			<Setter Property="Height" Value="130"/>
 			<Setter Property="Width" Value="110"/>
@@ -85,7 +83,6 @@
 
 	<Grid>
 
-		<!-- Háttér -->
 		<Rectangle>
 			<Rectangle.Fill>
 				<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -96,12 +93,9 @@
 			</Rectangle.Fill>
 		</Rectangle>
 
-		<!-- Dekoratív keret -->
 		<Border BorderBrush="#D4A017" BorderThickness="3" Margin="10" CornerRadius="8"/>
-		<Border BorderBrush="#8B6914" BorderThickness="1" Margin="16" CornerRadius="6"/>
-
-		<!-- ── MENÜSOR ── -->
-		<Menu Background="#2C1200" Foreground="#F5DEB3"
+        <Border BorderBrush="#8B6914" BorderThickness="1" Margin="16" CornerRadius="6"/>
+        <Menu Background="#2C1200" Foreground="#F5DEB3"
               FontFamily="Georgia" FontSize="14"
               VerticalAlignment="Top" Margin="15,15,15,0"
               BorderBrush="#D4A017" BorderThickness="1">
@@ -128,13 +122,9 @@
 			</MenuItem>
 		</Menu>
 
-		<!-- ══════════════════════════════════════
-             FŐMENÜ PANEL
-        ══════════════════════════════════════ -->
 		<Grid Margin="15,50,15,40"
               Visibility="{Binding FomenLathato}">
 
-			<!-- Cím -->
 			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"
                         Margin="0,18,0,0">
 				<TextBlock Text="SNAPSZER"
@@ -151,11 +141,9 @@
                            Margin="0,2,0,0"/>
 			</StackPanel>
 
-			<!-- 4 SZÍN IKON – legyező elrendezés, egymásba lógva -->
 			<Canvas HorizontalAlignment="Center" VerticalAlignment="Center"
                     Width="340" Height="170" Margin="0,50,0,0">
 
-				<!-- MAKK – bal külső, -18° -->
 				<Image Source="Images/makk.png" Width="115" Height="115"
                        Canvas.Left="5" Canvas.Top="30"
                        Panel.ZIndex="1"
@@ -168,7 +156,6 @@
 					</Image.Effect>
 				</Image>
 
-				<!-- TÖK – bal belső, -6° -->
 				<Image Source="Images/tok.png" Width="115" Height="115"
                        Canvas.Left="80" Canvas.Top="10"
                        Panel.ZIndex="2"
@@ -181,7 +168,6 @@
 					</Image.Effect>
 				</Image>
 
-				<!-- ZÖLD – jobb belső, +6° -->
 				<Image Source="Images/zold.png" Width="115" Height="115"
                        Canvas.Left="155" Canvas.Top="10"
                        Panel.ZIndex="2"
@@ -194,7 +180,6 @@
 					</Image.Effect>
 				</Image>
 
-				<!-- PIROS – jobb külső, +18° -->
 				<Image Source="Images/piros.png" Width="115" Height="115"
                        Canvas.Left="225" Canvas.Top="30"
                        Panel.ZIndex="1"
@@ -209,7 +194,6 @@
 
 			</Canvas>
 
-			<!-- Gombok alul -->
 			<StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"
                         Margin="0,0,0,8">
 				<Button Content="▶  Játék indítása"
@@ -225,7 +209,6 @@
 
 		</Grid>
 
-		<!-- Státusz sáv -->
 		<Border VerticalAlignment="Bottom" Margin="15,0,15,15"
                 Background="#2C1200" BorderBrush="#D4A017"
                 BorderThickness="1" CornerRadius="4" Height="28">

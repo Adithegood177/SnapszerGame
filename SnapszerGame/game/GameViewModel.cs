@@ -44,53 +44,48 @@ namespace SnapszerGame.game
 
         public void JatekInditasa()
         {
-            // Alaphelyzet
+            
             Pakli = new KartyaCsomag();
             Pakli.PakliKeveres();
             JatekosLapok.Clear();
             EllensegLapok.Clear();
 
-            // 5 lap fejenként
+            
             for (int i = 0; i < 5; i++)
             {
                 JatekosLapok.Add(Pakli.Huzas());
                 EllensegLapok.Add(Pakli.Huzas());
             }
 
-            // Kezdő játékos sorsolása, adu választás
             Random rnd = new Random();
             bool enKezdek = rnd.Next(2) == 0;
 
             if (enKezdek)
             {
-                AduValasztasFolyamatban = true; // Játékos választ adut
+                AduValasztasFolyamatban = true; 
             }
             else
             {
                 AduValasztasFolyamatban = false;
-                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; // Gép választ adut
-                EnKovetkezem = true; // Gép választott, játékos jön
+                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; 
+                EnKovetkezem = true; 
             }
         }
 
-        // Játékos választ adut (UI hívja)
+        
         public void JatekosAdutValaszt(Szin valasztottSzin)
         {
             AduSzin = valasztottSzin;
             AduValasztasFolyamatban = false;
-            EnKovetkezem = false; // Gép jön hívással
+            EnKovetkezem = false; 
         }
 
-        // Pakli lezárása (gomb vagy üres pakli esetén)
         public void PakliLezarasa()
         {
-            PakliLezarva = true; // Szigorított szabályok élesítése
+            PakliLezarva = true; 
         }
-
-        // Bemondás lehetőségének vizsgálata (UI frissítés)
         public void FrissitBemondasLehetoseg()
         {
-            // Csak saját hívásnál mondhatunk be
             if (EnKovetkezem)
             {
                 var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList());
@@ -102,17 +97,12 @@ namespace SnapszerGame.game
             }
         }
 
-        // 20/40 bemondás kezelése (UI gomb)
         public void JatekosBemond(Szin bemondottSzin)
         {
-            // Validáció: csak saját körben és ha van mit bemondani
             if (EnKovetkezem && _logic.LehetsegesBemondasok(JatekosLapok).Contains(bemondottSzin))
             {
                 int szerzettPont = _logic.BemondasErteke(bemondottSzin, AduSzin);
-                // TODO: Pontokat csak az első ütés után lehet jóváírni ténylegesen
                 JatekosPont += szerzettPont; 
-
-                // Gomb letiltása bemondás után
                 LehetBemondani = false;
             }
         }

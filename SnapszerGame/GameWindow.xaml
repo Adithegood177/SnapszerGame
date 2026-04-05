@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:SnapszerGame"
         Title="Jatek" Height="1080" Width="1920" WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="#1A0A00">
-
+ 
         <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <local:MultiplyConverter x:Key="Mul" />

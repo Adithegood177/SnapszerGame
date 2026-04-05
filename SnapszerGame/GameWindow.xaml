@@ -12,34 +12,45 @@
         <local:CardSizeConverter x:Key="CardSize" />
         <!-- Jatekos kartyaja (mindig keppel felfele) -->
         <DataTemplate x:Key="PlayerCardTemplate" DataType="{x:Type game:Card}">
-            <Grid Margin="6,0">
+            <Grid Margin="8,0">
                 <Grid.Width>
-                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.12;1.0">
+                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.13;1.0">
                         <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                     </MultiBinding>
                 </Grid.Width>
                 <Grid.Height>
-                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.18;1.0">
+                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.19;1.0">
                         <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                     </MultiBinding>
                 </Grid.Height>
 
-                <Border x:Name="CardBorder" Background="Transparent" CornerRadius="6" BorderBrush="Transparent" BorderThickness="0" SnapsToDevicePixels="True" UseLayoutRounding="True">
-                    <Border.RenderTransform>
-                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                    </Border.RenderTransform>
-                    <Image Source="{Binding ImagePath}" Stretch="Uniform" StretchDirection="Both" Opacity="0.96"/>
-                    <Border.Effect>
-                        <DropShadowEffect Color="#000" BlurRadius="6" ShadowDepth="3" Opacity="0.45"/>
-                    </Border.Effect>
-
+                <Border x:Name="CardBorder" Background="#2A2A2A" CornerRadius="4" BorderBrush="#555555" BorderThickness="1" SnapsToDevicePixels="True" UseLayoutRounding="True">
+                    <Grid>
+                        <!-- Kartya kepe csokkentett opacitassal -->
+                        <Image Source="{Binding ImagePath}" Stretch="Fill" StretchDirection="Both" Margin="0">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Setter Property="Opacity" Value="0.6"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, ElementName=CardBorder}" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </Grid>
                     <Border.Style>
                         <Style TargetType="Border">
+                            <Setter Property="RenderTransformOrigin" Value="0.5,1" />
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
-                                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                        <TranslateTransform Y="0" />
+                                    </TransformGroup>
                                 </Setter.Value>
                             </Setter>
                             <Setter Property="Effect">
@@ -49,20 +60,28 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="RenderTransform">
-                                        <Setter.Value>
-                                            <ScaleTransform ScaleX="1.12" ScaleY="1.12" />
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="Effect">
-                                        <Setter.Value>
-                                            <DropShadowEffect Color="#000" BlurRadius="12" ShadowDepth="6" Opacity="0.95"/>
-                                        </Setter.Value>
-                                    </Setter>
+                                    <Setter Property="Panel.ZIndex" Value="100"/>
                                     <Setter Property="BorderBrush" Value="#FFD700"/>
-                                    <Setter Property="BorderThickness" Value="3"/>
-                                    <Setter Property="Opacity" Value="1.0"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
                                 </Trigger>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="1.15" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="1.15" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="-30" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
@@ -153,8 +172,8 @@
             <Grid.RowDefinitions>
                 <!-- Use star sizing so card areas scale with window and won't clip -->
                 <RowDefinition Height="2*"/> <!-- Ellenseg lapjai -->
-                <RowDefinition Height="6*"/>   <!-- Jatek ter (Pakli, lerakott lapok) -->
-                <RowDefinition Height="2*"/> <!-- Jatekos lapjai -->
+                <RowDefinition Height="4*"/>   <!-- Jatek ter (Pakli, lerakott lapok) -->
+                <RowDefinition Height="4*"/> <!-- Jatekos lapjai -->
             </Grid.RowDefinitions>
 
             <!-- Ellenseg Keze (Fent) -->
@@ -179,15 +198,15 @@
                 <Image Grid.Column="0" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png"
                        Stretch="Uniform" StretchDirection="Both">
                     <Image.Width>
-                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.06;1.0">
+                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
                             <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                            <Binding Path="HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         </MultiBinding>
                     </Image.Width>
                     <Image.Height>
-                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.09;1.0">
+                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
                             <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                            <Binding Path="HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         </MultiBinding>
                     </Image.Height>
                     <Image.Effect>
@@ -199,7 +218,7 @@
 
             <!-- Jatekos Keze (Lent) -->
             <ItemsControl Grid.Row="2" ItemsSource="{Binding JatekosLapok}" ItemTemplate="{StaticResource PlayerCardTemplate}" 
-                          HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+                          HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" ClipToBounds="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>

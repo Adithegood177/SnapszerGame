@@ -35,9 +35,9 @@
     </Window.Resources>
 
     <Grid>
-        <!-- Hatter -->
+        <!-- Hatter --> 
         <Rectangle Grid.RowSpan="3">
-            <Rectangle.Fill>
+            <Rectangle.Fill> 
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                     <GradientStop Color="#1A0A00" Offset="0"/>
                     <GradientStop Color="#2C1200" Offset="0.5"/>

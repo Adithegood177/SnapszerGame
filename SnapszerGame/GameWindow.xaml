@@ -22,9 +22,9 @@
         <DataTemplate x:Key="EnemyCardTemplate" DataType="{x:Type game:Card}">
             <Grid Width="80" Height="120" Margin="4,0">
                 <Image x:Name="FaceImage" Source="{Binding ImagePath}" Stretch="UniformToFill" Visibility="Collapsed"/>
-                
+
                 <!-- Hatlap -->
-                <Image x:Name="BackImage" Source="pack://application:,,,/kartyak/hatlap_fuggoleg.png" Stretch="UniformToFill" Visibility="Visible">
+                <Image x:Name="BackImage" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="UniformToFill" Visibility="Visible">
                      <Image.Effect>
                         <DropShadowEffect Color="#000" BlurRadius="6" ShadowDepth="3" Opacity="0.5"/>
                     </Image.Effect>
@@ -77,7 +77,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Pakli megjelenitese -->
-                <Image Grid.Column="0" Source="pack://application:,,,/kartyak/hatlap_fuggoleg.png" Width="80" Height="120" Stretch="UniformToFill">
+                <Image Grid.Column="0" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Width="80" Height="120" Stretch="UniformToFill">
                     <Image.Effect>
                         <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6"/>
                     </Image.Effect>

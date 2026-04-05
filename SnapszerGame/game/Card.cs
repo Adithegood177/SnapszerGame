@@ -30,8 +30,8 @@ namespace SnapszerGame.game
                     _ => ertek.ToString().ToLower()
                 };
 
-                // Használjunk abszolút pack URI-t a megbízható betöltéshez a build-ből (Build Action: Resource esetén) vagy legalább pontos gyökérrel
-                return $"pack://application:,,,/kartyak/{s}_{e}.png";
+                // Use explicit component pack URI so WPF reliably finds the resource in this assembly
+                return $"/SnapszerGame;component/kartyak/{s}_{e}.png";
             }
         }
 

@@ -24,7 +24,25 @@ namespace SnapszerGame.game
         public int JatekosPont { get => _jatekosPont; set { _jatekosPont = value; OnPropertyChanged(nameof(JatekosPont)); } }
 
         private Szin _aduSzin;
-        public Szin AduSzin { get => _aduSzin; set { _aduSzin = value; OnPropertyChanged(nameof(AduSzin)); } }
+        private string _aduImagePath = string.Empty;
+        private bool _hasAduChosen = false;
+
+        public Szin AduSzin
+        {
+            get => _aduSzin;
+            set
+            {
+                _aduSzin = value;
+                // update helper properties for the view
+                AduImagePath = $"/SnapszerGame;component/szinek/{_aduSzin.ToString().ToLower()}.png";
+                HasAduChosen = true;
+                OnPropertyChanged(nameof(AduSzin));
+            }
+        }
+
+        public string AduImagePath { get => _aduImagePath; private set { _aduImagePath = value; OnPropertyChanged(nameof(AduImagePath)); } }
+
+        public bool HasAduChosen { get => _hasAduChosen; set { _hasAduChosen = value; OnPropertyChanged(nameof(HasAduChosen)); } }
 
         private bool _aduValasztasFolyamatban;
         public bool AduValasztasFolyamatban { get => _aduValasztasFolyamatban; set { _aduValasztasFolyamatban = value; OnPropertyChanged(nameof(AduValasztasFolyamatban)); } }
@@ -66,6 +84,8 @@ namespace SnapszerGame.game
             AduValasztasFolyamatban = false;
             EnKovetkezem = false;
             StatuszUzenet = string.Empty;
+            HasAduChosen = false;
+            AduImagePath = string.Empty;
 
             return enKezdek;
         }

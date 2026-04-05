@@ -1,13 +1,15 @@
 ﻿<Window x:Class="SnapszerGame.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:game="clr-namespace:SnapszerGame.game"
-        Title="Snapszer" Height="620" Width="820"
-        WindowStartupLocation="CenterScreen"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:game="clr-namespace:SnapszerGame.game"
+		xmlns:local="clr-namespace:SnapszerGame"
+		Title="Snapszer" Height="1080" Width="1920"
+		WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         Background="#1A0A00">
 
-	<Window.Resources>
+  <Window.Resources>
+		<local:MultiplyConverter x:Key="Mul" />
 
 		<!-- Menü gomb stílus -->
 		<Style x:Key="MenuGombStilus" TargetType="Button">

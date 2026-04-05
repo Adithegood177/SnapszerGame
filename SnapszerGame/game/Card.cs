@@ -5,11 +5,18 @@ namespace SnapszerGame.game
     public enum Szin { Piros, Zold, Makk, Tok }
     public enum Ertek { Kilenc = 0, Alsokiraly = 2, Felsokiraly = 3, Kiraly = 4, Tiz = 10, Asz = 11 }
 
-    public class Card
+    public class Card : System.ComponentModel.INotifyPropertyChanged
     {
-        public Szin szin { get; set; }
-        public Ertek ertek { get; set; }
+        private Szin _szin;
+        private Ertek _ertek;
+        private bool _isFaceUp = false;
+
+        public Szin szin { get => _szin; set { _szin = value; OnPropertyChanged(nameof(szin)); OnPropertyChanged(nameof(ImagePath)); } }
+        public Ertek ertek { get => _ertek; set { _ertek = value; OnPropertyChanged(nameof(ertek)); OnPropertyChanged(nameof(ImagePath)); } }
         public int pont => (int)ertek;
+
+        // Whether the card is currently face-up (visible) or face-down
+        public bool IsFaceUp { get => _isFaceUp; set { _isFaceUp = value; OnPropertyChanged(nameof(IsFaceUp)); } }
 
         public string ImagePath
         {
@@ -37,13 +44,16 @@ namespace SnapszerGame.game
 
         public Card(Szin szin, Ertek ertek)
         {
-            this.szin = szin;
-            this.ertek = ertek;
+            this._szin = szin;
+            this._ertek = ertek;
         }
 
         public override string ToString()
         {
             return $"{szin} {ertek}";
         }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }

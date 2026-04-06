@@ -12,36 +12,33 @@
         <local:CardSizeConverter x:Key="CardSize" />
         <!-- Jatekos kartyaja (mindig keppel felfele) -->
         <DataTemplate x:Key="PlayerCardTemplate" DataType="{x:Type game:Card}">
-            <Grid Margin="8,0">
+            <Grid Margin="12,0">
                 <Grid.Width>
-                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.13;1.0">
+                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.16;1.0">
                         <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                     </MultiBinding>
                 </Grid.Width>
                 <Grid.Height>
-                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.19;1.0">
+                    <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.24;1.0">
                         <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                         <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                     </MultiBinding>
                 </Grid.Height>
 
-                <Border x:Name="CardBorder" Background="#2A2A2A" CornerRadius="4" BorderBrush="#555555" BorderThickness="1" SnapsToDevicePixels="True" UseLayoutRounding="True">
-                    <Grid>
-                        <!-- Kartya kepe csokkentett opacitassal -->
-                        <Image Source="{Binding ImagePath}" Stretch="Fill" StretchDirection="Both" Margin="0">
-                            <Image.Style>
-                                <Style TargetType="Image">
-                                    <Setter Property="Opacity" Value="0.6"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMouseOver, ElementName=CardBorder}" Value="True">
-                                            <Setter Property="Opacity" Value="1.0"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Image.Style>
-                        </Image>
-                    </Grid>
+                <Border x:Name="CardBorder" Background="Transparent" BorderThickness="0" SnapsToDevicePixels="True" UseLayoutRounding="True">
+                    <Image Source="{Binding ImagePath}" Stretch="Uniform" StretchDirection="Both">
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Setter Property="Opacity" Value="0.8"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=CardBorder}" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="RenderTransformOrigin" Value="0.5,1" />
@@ -61,8 +58,6 @@
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter Property="Panel.ZIndex" Value="100"/>
-                                    <Setter Property="BorderBrush" Value="#FFD700"/>
-                                    <Setter Property="BorderThickness" Value="2"/>
                                 </Trigger>
                                 <EventTrigger RoutedEvent="MouseEnter">
                                     <BeginStoryboard>
@@ -139,15 +134,27 @@
     
     <Grid>
         <!-- Hatter --> 
-        <Rectangle Grid.RowSpan="3">
-            <Rectangle.Fill> 
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#1A0A00" Offset="0"/>
-                    <GradientStop Color="#2C1200" Offset="0.5"/>
-                    <GradientStop Color="#1A0A00" Offset="1"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+        <Grid Grid.RowSpan="3" Background="#1a0a00">
+            <!-- Asztal -->
+            <Border Margin="80,40" CornerRadius="400" BorderBrush="#3b1e08" BorderThickness="20">
+                <Border.Background>
+                    <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
+                        <GradientStop Color="#0A6022" Offset="0"/>
+                        <GradientStop Color="#053511" Offset="0.7"/>
+                        <GradientStop Color="#011806" Offset="1"/>
+                    </RadialGradientBrush>
+                </Border.Background>
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="40" ShadowDepth="15" Opacity="0.8"/>
+                </Border.Effect>
+                <!-- Belso asztal arnyek szel -->
+                <Border CornerRadius="400" BorderBrush="#000" BorderThickness="3" Opacity="0.4">
+                    <Border.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="50" ShadowDepth="0"/>
+                    </Border.Effect>
+                </Border>
+            </Border>
+        </Grid>
 
         <!-- Statusz sav -->
         <Border VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,15,0,0" 
@@ -172,13 +179,13 @@
             <Grid.RowDefinitions>
                 <!-- Use star sizing so card areas scale with window and won't clip -->
                 <RowDefinition Height="2*"/> <!-- Ellenseg lapjai -->
-                <RowDefinition Height="4*"/>   <!-- Jatek ter (Pakli, lerakott lapok) -->
-                <RowDefinition Height="4*"/> <!-- Jatekos lapjai -->
+                <RowDefinition Height="3.5*"/>   <!-- Jatek ter (Pakli, lerakott lapok) -->
+                <RowDefinition Height="4.5*"/> <!-- Jatekos lapjai -->
             </Grid.RowDefinitions>
 
             <!-- Ellenseg Keze (Fent) -->
             <ItemsControl Grid.Row="0" ItemsSource="{Binding EllensegLapok}" ItemTemplate="{StaticResource EnemyCardTemplate}" 
-                          HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False">
+                          HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" ClipToBounds="False">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
@@ -194,37 +201,149 @@
                     <ColumnDefinition Width="Auto"/> <!-- Lejatszott lapok terulete -->
                 </Grid.ColumnDefinitions>
 
-                <!-- Pakli megjelenitese -->
-                <Image Grid.Column="0" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png"
-                       Stretch="Uniform" StretchDirection="Both">
-                    <Image.Width>
-                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
-                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                        </MultiBinding>
-                    </Image.Width>
-                    <Image.Height>
-                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
-                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                        </MultiBinding>
-                    </Image.Height>
-                    <Image.Effect>
-                        <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6"/>
-                    </Image.Effect>
-                </Image>
+                <!-- Pakli helye es kartya kijelolve ("Monopoly" szeru) -->
+                <Border Grid.Column="0" BorderBrush="#88FFFFFF" BorderThickness="2" CornerRadius="8" Background="#11FFFFFF" Padding="4">
+                    <Grid>
+                        <!-- Sziluett szoveg ures paklira -->
+                        <TextBlock Text="PAKLI" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        
+                        <!-- Pakli megjelenitese -->
+                        <Image Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="Uniform" StretchDirection="Both">
+                            <Image.Width>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
+                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Image.Width>
+                            <Image.Height>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
+                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Image.Height>
+                            <Image.Effect>
+                                <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6"/>
+                            </Image.Effect>
+                        </Image>
+                    </Grid>
+                </Border>
+
+                <!-- Dobott lapok helye kijelzese tulsoldalon -->
+                <Border Grid.Column="2" BorderBrush="#88FFFFFF" BorderThickness="2" CornerRadius="8" Background="#11FFFFFF" Padding="4">
+                    <Grid>
+                        <TextBlock Text="ASZTAL" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="Transparent">
+                            <Border.Width>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
+                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Border.Width>
+                            <Border.Height>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
+                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Border.Height>
+                        </Border>
+                    </Grid>
+                </Border>
 
             </Grid>
 
             <!-- Jatekos Keze (Lent) -->
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding JatekosLapok}" ItemTemplate="{StaticResource PlayerCardTemplate}" 
-                          HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0" ClipToBounds="False">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <Grid Grid.Row="2" VerticalAlignment="Top" Margin="0,15,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 20/40 Bemondas gombok -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                    
+                    <!-- 20 Bemondas Gomb -->
+                    <Button Content="20 Bemondas" Padding="40,15" FontWeight="Bold" FontSize="20" Cursor="Hand" Margin="0,0,30,0"
+                            IsEnabled="{Binding LehetBemondani}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
+                                    <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="#666666"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="3" Opacity="0.4"/>
+                                    </Border.Effect>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA1A1A1A"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#CC888888"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#E0E0E0"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsEnabled" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA137333"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#DD2EFF70"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#FFFFFF"/>
+                                        <Setter TargetName="btnBorder" Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#2EFF70" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- 40 Bemondas Gomb -->
+                    <Button Content="40 Bemondas" Padding="40,15" FontWeight="Bold" FontSize="20" Cursor="Hand" 
+                            IsEnabled="{Binding LehetBemondani}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
+                                    <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="#666666"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="3" Opacity="0.4"/>
+                                    </Border.Effect>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA1A1A1A"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#CC888888"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#E0E0E0"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsEnabled" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AAA31621"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#DDFF4D4D"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#FFFFFF"/>
+                                        <Setter TargetName="btnBorder" Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#FF4D4D" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                </StackPanel>
+
+                <ItemsControl Grid.Row="1" ItemsSource="{Binding JatekosLapok}" ItemTemplate="{StaticResource PlayerCardTemplate}" 
+                              HorizontalAlignment="Center" ClipToBounds="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
 
         </Grid>
     </Grid>

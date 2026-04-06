@@ -10,6 +10,17 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <local:MultiplyConverter x:Key="Mul" />
         <local:CardSizeConverter x:Key="CardSize" />
+
+        <Storyboard x:Key="BemondasAppear">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-20" To="0" Duration="0:0:0.25" />
+        </Storyboard>
+
+        <Storyboard x:Key="BemondasDisappear">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:1" Duration="0:0:0.3" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:1" Duration="0:0:0.3" />
+        </Storyboard>
+
         <!-- Jatekos kartyaja (mindig keppel felfele) -->
         <DataTemplate x:Key="PlayerCardTemplate" DataType="{x:Type game:Card}">
             <Grid Margin="12,0">
@@ -131,7 +142,6 @@
         </DataTemplate>
     </Window.Resources>
 
-    
     <Grid>
         <!-- Hatter --> 
         <Grid Grid.RowSpan="3" Background="#1a0a00">
@@ -162,8 +172,25 @@
             <TextBlock Text="{Binding StatuszUzenet}" Foreground="#FFD700" FontFamily="Georgia" FontSize="16" FontWeight="Bold"/>
         </Border>
 
+        <!-- Pontszamlalok -->
+        <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,15" 
+                Background="#88000000" CornerRadius="6" Padding="15,10" Panel.ZIndex="10" Grid.RowSpan="3">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="ELLENSEG PONT" Foreground="#FFD700" FontFamily="Georgia" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+                <TextBlock Text="{Binding EllensegPont}" Foreground="#FFF8E7" FontFamily="Georgia" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        
+        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,15,15,0" 
+                Background="#88000000" CornerRadius="6" Padding="15,10" Panel.ZIndex="10" Grid.RowSpan="3">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="PONTJAID" Foreground="#FFD700" FontFamily="Georgia" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+                <TextBlock Text="{Binding JatekosPont}" Foreground="#FFF8E7" FontFamily="Georgia" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Adu kijelzes (sarokban) -->
-        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,12,12,0"
+        <Border VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,120,12,0"
                 Background="#88000000" CornerRadius="6" Padding="8" Panel.ZIndex="11"
                 Visibility="{Binding HasAduChosen, Converter={StaticResource BoolToVis}}">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -175,6 +202,17 @@
             </StackPanel>
         </Border>
         
+        <!-- Bemondas kiiras kozepen -->
+        <Border x:Name="BemondasPanel" Opacity="0" RenderTransformOrigin="0.5,0.5" Background="#AA000000" CornerRadius="8" Padding="12" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="50">
+            <Border.RenderTransform>
+                <TranslateTransform Y="-20" />
+            </Border.RenderTransform>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <TextBlock Text="" x:Name="BemondasText" Foreground="#FFD700" FontFamily="Georgia" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="" x:Name="BemondasSzinText" Foreground="#FFF8E7" FontFamily="Georgia" FontSize="24" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <Grid>
             <Grid.RowDefinitions>
                 <!-- Use star sizing so card areas scale with window and won't clip -->
@@ -208,7 +246,7 @@
                         <TextBlock Text="PAKLI" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         
                         <!-- Pakli megjelenitese -->
-                        <Image Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="Uniform" StretchDirection="Both">
+                        <Image x:Name="PakliImage" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="Uniform" StretchDirection="Both" Visibility="{Binding PakliVisibility}">
                             <Image.Width>
                                 <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
                                     <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
@@ -232,20 +270,57 @@
                 <Border Grid.Column="2" BorderBrush="#88FFFFFF" BorderThickness="2" CornerRadius="8" Background="#11FFFFFF" Padding="4">
                     <Grid>
                         <TextBlock Text="ASZTAL" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Border Background="Transparent">
-                            <Border.Width>
-                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
+                        
+                        <!-- Center table size based on card sizes -->
+                        <Grid Background="Transparent">
+                            <Grid.Width>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.22;1.0">
                                     <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                     <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                 </MultiBinding>
-                            </Border.Width>
-                            <Border.Height>
-                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
+                            </Grid.Width>
+                            <Grid.Height>
+                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.18;1.0">
                                     <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                     <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
                                 </MultiBinding>
-                            </Border.Height>
-                        </Border>
+                            </Grid.Height>
+                            
+
+                            <!-- Enemy played card (placed slightly higher and shifted left) -->
+                            <Image Source="{Binding EllensegHivottLap.ImagePath}" Stretch="Uniform" StretchDirection="Both" Margin="0,0,40,20" Panel.ZIndex="1">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding EllensegHivottLap}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                                <Image.Effect>
+                                    <DropShadowEffect Color="#000" BlurRadius="4" ShadowDepth="2" Opacity="0.6"/>
+                                </Image.Effect>
+                            </Image>
+
+                            <!-- Player played card (placed slightly lower and shifted right, over the enemy card) -->
+                            <Image Source="{Binding JatekosHivottLap.ImagePath}" Stretch="Uniform" StretchDirection="Both" Margin="40,20,0,0" Panel.ZIndex="2">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding JatekosHivottLap}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                                <Image.Effect>
+                                    <DropShadowEffect Color="#000" BlurRadius="6" ShadowDepth="3" Opacity="0.8"/>
+                                </Image.Effect>
+                            </Image>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -263,7 +338,7 @@
                     
                     <!-- 20 Bemondas Gomb -->
                     <Button Content="20 Bemondas" Padding="40,15" FontWeight="Bold" FontSize="20" Cursor="Hand" Margin="0,0,30,0"
-                            IsEnabled="{Binding LehetBemondani}">
+                            IsEnabled="{Binding Lehet20Bemondani}" Click="Bemond20_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
@@ -299,7 +374,7 @@
 
                     <!-- 40 Bemondas Gomb -->
                     <Button Content="40 Bemondas" Padding="40,15" FontWeight="Bold" FontSize="20" Cursor="Hand" 
-                            IsEnabled="{Binding LehetBemondani}">
+                            IsEnabled="{Binding Lehet40Bemondani}" Click="Bemond40_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
@@ -336,7 +411,7 @@
                 </StackPanel>
 
                 <ItemsControl Grid.Row="1" ItemsSource="{Binding JatekosLapok}" ItemTemplate="{StaticResource PlayerCardTemplate}" 
-                              HorizontalAlignment="Center" ClipToBounds="False">
+                              HorizontalAlignment="Center" ClipToBounds="False" MouseLeftButtonUp="ItemsControl_MouseLeftButtonUp">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>

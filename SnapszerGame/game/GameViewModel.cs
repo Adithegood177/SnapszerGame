@@ -23,6 +23,9 @@ namespace SnapszerGame.game
         private int _jatekosPont;
         public int JatekosPont { get => _jatekosPont; set { _jatekosPont = value; OnPropertyChanged(nameof(JatekosPont)); } }
 
+        private int _ellensegPont;
+        public int EllensegPont { get => _ellensegPont; set { _ellensegPont = value; OnPropertyChanged(nameof(EllensegPont)); } }
+
         private Szin _aduSzin;
         private string _aduImagePath = string.Empty;
         private bool _hasAduChosen = false;
@@ -50,11 +53,24 @@ namespace SnapszerGame.game
         private bool _enKovetkezem;
         public bool EnKovetkezem { get => _enKovetkezem; set { _enKovetkezem = value; OnPropertyChanged(nameof(EnKovetkezem)); } }
 
-        private bool _lehetBemondani;
-        public bool LehetBemondani { get => _lehetBemondani; set { _lehetBemondani = value; OnPropertyChanged(nameof(LehetBemondani)); } }
+        private bool _lehet20Bemondani;
+        public bool Lehet20Bemondani { get => _lehet20Bemondani; set { _lehet20Bemondani = value; OnPropertyChanged(nameof(Lehet20Bemondani)); } }
+
+        private bool _lehet40Bemondani;
+        public bool Lehet40Bemondani { get => _lehet40Bemondani; set { _lehet40Bemondani = value; OnPropertyChanged(nameof(Lehet40Bemondani)); } }
+
+        private Visibility _pakliVisibility = Visibility.Visible;
+        public Visibility PakliVisibility { get => _pakliVisibility; set { _pakliVisibility = value; OnPropertyChanged(nameof(PakliVisibility)); } }
 
         private bool _pakliLezarva;
         public bool PakliLezarva { get => _pakliLezarva; set { _pakliLezarva = value; OnPropertyChanged(nameof(PakliLezarva)); } }
+
+        // New properties for tricks
+        private Card _jatekosHivottLap;
+        public Card JatekosHivottLap { get => _jatekosHivottLap; set { _jatekosHivottLap = value; OnPropertyChanged(nameof(JatekosHivottLap)); } }
+
+        private Card _ellensegHivottLap;
+        public Card EllensegHivottLap { get => _ellensegHivottLap; set { _ellensegHivottLap = value; OnPropertyChanged(nameof(EllensegHivottLap)); } }
 
         // New: status message shown in UI
         private string _statuszUzenet = string.Empty;
@@ -65,6 +81,10 @@ namespace SnapszerGame.game
         public Visibility FomenLathato { get => _fomenLathato; set { _fomenLathato = value; OnPropertyChanged(nameof(FomenLathato)); } }
 
         private SnapszerLogic _logic = new SnapszerLogic();
+        private System.Collections.Generic.List<Szin> _beMondottSzinek = new System.Collections.Generic.List<Szin>();
+
+        private Szin? _lastBemondottSzin = null;
+        public Szin? LastBemondottSzin { get => _lastBemondottSzin; set { _lastBemondottSzin = value; OnPropertyChanged(nameof(LastBemondottSzin)); } }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -76,6 +96,7 @@ namespace SnapszerGame.game
             Pakli.PakliKeveres();
             JatekosLapok.Clear();
             EllensegLapok.Clear();
+            _beMondottSzinek.Clear();
 
             Random rnd = new Random();
             bool enKezdek = rnd.Next(2) == 0;
@@ -86,6 +107,12 @@ namespace SnapszerGame.game
             StatuszUzenet = string.Empty;
             HasAduChosen = false;
             AduImagePath = string.Empty;
+            JatekosHivottLap = null;
+            EllensegHivottLap = null;
+            JatekosPont = 0;
+            EllensegPont = 0;
+            PakliVisibility = Visibility.Visible;
+            FrissitBemondasLehetoseg();
 
             return enKezdek;
         }
@@ -123,12 +150,14 @@ namespace SnapszerGame.game
             AduValasztasFolyamatban = false;
             EnKovetkezem = false; // Gép jön hívással
             StatuszUzenet = string.Empty;
+            FrissitBemondasLehetoseg();
         }
 
         // Pakli lezárása (gomb vagy üres pakli esetén)
         public void PakliLezarasa()
         {
             PakliLezarva = true; // Szigorított szabályok élesítése
+            PakliVisibility = Visibility.Collapsed;
         }
 
         // Bemondás lehetőségének vizsgálata (UI frissítés)
@@ -137,27 +166,33 @@ namespace SnapszerGame.game
             // Csak saját hívásnál mondhatunk be
             if (EnKovetkezem)
             {
-                var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList());
-                LehetBemondani = bemondasok.Any();
+                var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList()).Except(_beMondottSzinek).ToList();
+                Lehet20Bemondani = bemondasok.Any(s => s != AduSzin);
+                Lehet40Bemondani = bemondasok.Any(s => s == AduSzin);
             }
             else
             {
-                LehetBemondani = false;
+                Lehet20Bemondani = false;
+                Lehet40Bemondani = false;
             }
         }
 
         // 20/40 bemondás kezelése (UI gomb)
-        public void JatekosBemond(Szin bemondottSzin)
+        public void Bemond(bool is40)
         {
-            // Validáció: csak saját körben és ha van mit bemondani
-            if (EnKovetkezem && _logic.LehetsegesBemondasok(JatekosLapok).Contains(bemondottSzin))
+            var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList()).Except(_beMondottSzinek).ToList();
+            var cel = is40 ? bemondasok.FirstOrDefault(s => s == AduSzin) : bemondasok.FirstOrDefault(s => s != AduSzin);
+            
+            // Reset last
+            LastBemondottSzin = null;
+            // If it found a valid suit (since enum is value type, defaulting to 0 exists, so check if list actually had it)
+            if (bemondasok.Contains(cel))
             {
-                int szerzettPont = _logic.BemondasErteke(bemondottSzin, AduSzin);
-                // TODO: Pontokat csak az első ütés után lehet jóváírni ténylegesen
-                JatekosPont += szerzettPont; 
-
-                // Gomb letiltása bemondás után
-                LehetBemondani = false;
+                int szerzettPont = is40 ? 40 : 20;
+                JatekosPont += szerzettPont;
+                _beMondottSzinek.Add(cel);
+                LastBemondottSzin = cel;
+                FrissitBemondasLehetoseg();
             }
         }
     }

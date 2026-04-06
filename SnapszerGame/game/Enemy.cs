@@ -63,6 +63,39 @@ namespace SnapszerGame.game
             }
             return szabalyosLapok.OrderBy(l => l.pont).First();
         }
+
+        // New: Decide whether the enemy can and will announce 20/40.
+        // Returns (didBemond, is40, szin)
+        public (bool did, bool is40, Szin szin) TryBemond(IEnumerable<Card> gepKezeben, Szin aduSzin, IEnumerable<Szin> alreadyBemondott = null)
+        {
+            var lapok = gepKezeben.ToList();
+            var lehet = _logic.LehetsegesBemondasok(lapok);
+            if (alreadyBemondott != null)
+            {
+                var used = new HashSet<Szin>(alreadyBemondott);
+                lehet = lehet.Where(s => !used.Contains(s)).ToList();
+            }
+
+            if (!lehet.Any()) return (false, false, default);
+
+            // Prefer 40 (adu) if available
+            var aduSzinek = lehet.Where(s => s == aduSzin).ToList();
+            if (aduSzinek.Any())
+            {
+                // enemy will announce 40
+                return (true, true, aduSzinek.First());
+            }
+
+            // Otherwise announce 20 on a random available non-adu suit
+            var nonAdu = lehet.Where(s => s != aduSzin).ToList();
+            if (nonAdu.Any())
+            {
+                var pick = nonAdu[_rnd.Next(nonAdu.Count)];
+                return (true, false, pick);
+            }
+
+            return (false, false, default);
+        }
     }
 }
 

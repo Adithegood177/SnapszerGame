@@ -89,6 +89,14 @@ namespace SnapszerGame
                 _jatekFolyamatban = true;
                 _vm.FrissitBemondasLehetoseg();
 
+                // Enemy may announce immediately after dealing
+                var bem = _gep.TryBemond(_vm.EllensegLapok, _vm.AduSzin, _vm.BemondottSzinek);
+                if (bem.did)
+                {
+                    _vm.EnemyBemond(bem.szin, bem.is40);
+                    await MutassBemondasAnimaciot(bem.is40, false);
+                }
+
                 await Task.Delay(1500);
                 await GepHiv();
             }
@@ -159,6 +167,14 @@ namespace SnapszerGame
 
         private async Task GepHiv()
         {
+            // Enemy may decide to bemond before leading
+            var tryBem = _gep.TryBemond(_vm.EllensegLapok, _vm.AduSzin, _vm.BemondottSzinek);
+            if (tryBem.did)
+            {
+                _vm.EnemyBemond(tryBem.szin, tryBem.is40);
+                await MutassBemondasAnimaciot(tryBem.is40, false);
+            }
+
             var hivottLap = _gep.GepHiv(_vm.EllensegLapok, _vm.AduSzin);
             _vm.EllensegLapok.Remove(hivottLap);
             _vm.EllensegHivottLap = hivottLap;
@@ -294,8 +310,8 @@ namespace SnapszerGame
             }
         }
 
-        private async void MutassBemondasAnimaciot(bool is40)
-        {
+        private async Task MutassBemondasAnimaciot(bool is40, bool toPlayer = true)
+         {
             // Set message and suspend interaction for a short time to show animation
             if (is40)
             {
@@ -349,20 +365,20 @@ namespace SnapszerGame
                 // Animate to center (table area center)
                 var center = new System.Windows.Point((this.ActualWidth / 2) - img.Width / 2, (this.ActualHeight / 2) - img.Height / 2);
 
-                var animX = new DoubleAnimation(pakliPos.X, center.X, new Duration(System.TimeSpan.FromMilliseconds(500)));
-                var animY = new DoubleAnimation(pakliPos.Y, center.Y, new Duration(System.TimeSpan.FromMilliseconds(500)));
+                var animX = new DoubleAnimation(pakliPos.X, center.X, new Duration(System.TimeSpan.FromMilliseconds(900)));
+                var animY = new DoubleAnimation(pakliPos.Y, center.Y, new Duration(System.TimeSpan.FromMilliseconds(900)));
 
                 // Use attached properties animation
                 var daX = new DoubleAnimationUsingKeyFrames();
                 daX.KeyFrames.Add(new LinearDoubleKeyFrame(pakliPos.X, KeyTime.FromTimeSpan(System.TimeSpan.Zero)));
-                daX.KeyFrames.Add(new LinearDoubleKeyFrame(center.X, KeyTime.FromTimeSpan(System.TimeSpan.FromMilliseconds(500))));
+                daX.KeyFrames.Add(new LinearDoubleKeyFrame(center.X, KeyTime.FromTimeSpan(System.TimeSpan.FromMilliseconds(900))));
 
                 var daY = new DoubleAnimationUsingKeyFrames();
                 daY.KeyFrames.Add(new LinearDoubleKeyFrame(pakliPos.Y, KeyTime.FromTimeSpan(System.TimeSpan.Zero)));
-                daY.KeyFrames.Add(new LinearDoubleKeyFrame(center.Y, KeyTime.FromTimeSpan(System.TimeSpan.FromMilliseconds(500))));
+                daY.KeyFrames.Add(new LinearDoubleKeyFrame(center.Y, KeyTime.FromTimeSpan(System.TimeSpan.FromMilliseconds(900))));
 
-                var leftAnim = new DoubleAnimation(pakliPos.X, center.X, new Duration(System.TimeSpan.FromMilliseconds(500)));
-                var topAnim = new DoubleAnimation(pakliPos.Y, center.Y, new Duration(System.TimeSpan.FromMilliseconds(500)));
+                var leftAnim = new DoubleAnimation(pakliPos.X, center.X, new Duration(System.TimeSpan.FromMilliseconds(900)));
+                var topAnim = new DoubleAnimation(pakliPos.Y, center.Y, new Duration(System.TimeSpan.FromMilliseconds(900)));
 
                 leftAnim.FillBehavior = FillBehavior.Stop;
                 topAnim.FillBehavior = FillBehavior.Stop;
@@ -371,11 +387,14 @@ namespace SnapszerGame
                 {
                     overlay.Children.Remove(img);
 
-                    // Give extra card to player
+                    // Give extra card to the announcer
                     var extra = _vm.Pakli.Huzas();
                     if (extra != null)
                     {
-                        _vm.JatekosLapok.Add(extra);
+                        if (toPlayer)
+                            _vm.JatekosLapok.Add(extra);
+                        else
+                            _vm.EllensegLapok.Add(extra);
                     }
                     else
                     {
@@ -394,8 +413,8 @@ namespace SnapszerGame
 
                 sb.Begin();
 
-                await Task.Delay(800);
-            }
-        }
+                await Task.Delay(1200);
+             }
+         }
     }
 }

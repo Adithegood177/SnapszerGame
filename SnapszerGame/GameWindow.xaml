@@ -12,13 +12,13 @@
         <local:CardSizeConverter x:Key="CardSize" />
 
         <Storyboard x:Key="BemondasAppear">
-            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
-            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-20" To="0" Duration="0:0:0.25" />
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.6" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="-20" To="0" Duration="0:0:0.6" />
         </Storyboard>
 
         <Storyboard x:Key="BemondasDisappear">
-            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:1" Duration="0:0:0.3" />
-            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:1" Duration="0:0:0.3" />
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:3.5" Duration="0:0:0.5" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:3.5" Duration="0:0:0.5" />
         </Storyboard>
 
         <!-- Jatekos kartyaja (mindig keppel felfele) -->

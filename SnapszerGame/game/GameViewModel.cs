@@ -86,6 +86,11 @@ namespace SnapszerGame.game
         private Szin? _lastBemondottSzin = null;
         public Szin? LastBemondottSzin { get => _lastBemondottSzin; set { _lastBemondottSzin = value; OnPropertyChanged(nameof(LastBemondottSzin)); } }
 
+        private bool _bemondasEngedelyezett = true;
+        public bool BemondasEngedelyezett { get => _bemondasEngedelyezett; set { _bemondasEngedelyezett = value; OnPropertyChanged(nameof(BemondasEngedelyezett)); } }
+
+        public IEnumerable<Szin> BemondottSzinek => _beMondottSzinek;
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
@@ -97,6 +102,8 @@ namespace SnapszerGame.game
             JatekosLapok.Clear();
             EllensegLapok.Clear();
             _beMondottSzinek.Clear();
+            LastBemondottSzin = null;
+            BemondasEngedelyezett = true;
 
             Random rnd = new Random();
             bool enKezdek = rnd.Next(2) == 0;
@@ -115,6 +122,15 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
 
             return enKezdek;
+        }
+
+        // Call at the start of every new trick to reset per-trick bemondas state
+        public void StartNewTrick()
+        {
+            _beMondottSzinek.Clear();
+            LastBemondottSzin = null;
+            BemondasEngedelyezett = true;
+            FrissitBemondasLehetoseg();
         }
 
         // Backwards-compatible immediate start (no animation) kept for other callers
@@ -164,6 +180,13 @@ namespace SnapszerGame.game
         public void FrissitBemondasLehetoseg()
         {
             // Csak saját hívásnál mondhatunk be
+            if (!BemondasEngedelyezett)
+            {
+                Lehet20Bemondani = false;
+                Lehet40Bemondani = false;
+                return;
+            }
+
             if (EnKovetkezem)
             {
                 var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList()).Except(_beMondottSzinek).ToList();
@@ -180,6 +203,7 @@ namespace SnapszerGame.game
         // 20/40 bemondás kezelése (UI gomb)
         public void Bemond(bool is40)
         {
+            if (!BemondasEngedelyezett) return;
             var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList()).Except(_beMondottSzinek).ToList();
             var cel = is40 ? bemondasok.FirstOrDefault(s => s == AduSzin) : bemondasok.FirstOrDefault(s => s != AduSzin);
             
@@ -192,8 +216,21 @@ namespace SnapszerGame.game
                 JatekosPont += szerzettPont;
                 _beMondottSzinek.Add(cel);
                 LastBemondottSzin = cel;
+                BemondasEngedelyezett = false; // only one bemondas allowed this trick
                 FrissitBemondasLehetoseg();
             }
         }
+
+        // Called when the enemy announces a bemondas
+        public void EnemyBemond(Szin szin, bool is40)
+        {
+            if (!BemondasEngedelyezett) return;
+            if (!_beMondottSzinek.Contains(szin)) _beMondottSzinek.Add(szin);
+            LastBemondottSzin = szin;
+            int pont = is40 ? 40 : 20;
+            EllensegPont += pont;
+            BemondasEngedelyezett = false;
+            FrissitBemondasLehetoseg();
+        }
     }
-}
+ }

@@ -10,6 +10,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <local:MultiplyConverter x:Key="Mul" />
         <local:CardSizeConverter x:Key="CardSize" />
+        <local:NullToVisibilityConverter x:Key="NullToVis" />
 
         <Storyboard x:Key="BemondasAppear">
             <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.6" />
@@ -19,6 +20,20 @@
         <Storyboard x:Key="BemondasDisappear">
             <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:3.5" Duration="0:0:0.5" />
             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:3.5" Duration="0:0:0.5" />
+        </Storyboard>
+
+        <!-- Talon hover animations -->
+        <Storyboard x:Key="TalonHoverEnter">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" To="0.95" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="-6" Duration="0:0:0.12" />
+        </Storyboard>
+        <Storyboard x:Key="TalonHoverLeave">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" To="1.0" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" To="1.0" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" To="0.6" Duration="0:0:0.12" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" To="0" Duration="0:0:0.12" />
         </Storyboard>
 
         <!-- Jatekos kartyaja (mindig keppel felfele) -->
@@ -172,6 +187,24 @@
             <TextBlock Text="{Binding StatuszUzenet}" Foreground="#FFD700" FontFamily="Georgia" FontSize="16" FontWeight="Bold"/>
         </Border>
 
+        <!-- Nyert meccsek (bal fels? sarok) -->
+        <Border VerticalAlignment="Top" HorizontalAlignment="Left" Margin="15,15,0,0"
+                Background="#88000000" CornerRadius="6" Padding="10,6" Panel.ZIndex="11">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" Margin="0,0,10,0">
+                    <TextBlock Text="Nyert meccsek" Foreground="#FFD700" FontFamily="Georgia" FontSize="12" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Border Background="#2288CC33" CornerRadius="4" Padding="6" Margin="0,0,6,0">
+                            <TextBlock Text="{Binding MerkozesNyertJatekos}" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border Background="#22CC3333" CornerRadius="4" Padding="6">
+                            <TextBlock Text="{Binding MerkozesNyertEllenseg}" Foreground="White" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- Pontszamlalok -->
         <Border VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="15,0,0,15" 
                 Background="#88000000" CornerRadius="6" Padding="15,10" Panel.ZIndex="10" Grid.RowSpan="3">
@@ -242,29 +275,83 @@
                 <!-- Pakli helye es kartya kijelolve ("Monopoly" szeru) -->
                 <Border Grid.Column="0" BorderBrush="#88FFFFFF" BorderThickness="2" CornerRadius="8" Background="#11FFFFFF" Padding="4">
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Talon area on the left -->
+                        <Border x:Name="TalonBorder" Grid.Column="0" Background="#22000000" CornerRadius="6" Padding="8" Margin="0,0,6,0" Cursor="Hand" MouseLeftButtonUp="TalonArea_MouseLeftButtonUp" Visibility="{Binding FelforditottKartya, Converter={StaticResource NullToVis}}" BorderBrush="Transparent" BorderThickness="1">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TransformGroup>
+                                                <ScaleTransform ScaleX="1" ScaleY="1" />
+                                                <TranslateTransform Y="0" />
+                                            </TransformGroup>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding LehetTalonCsere}" Value="True">
+                                            <Setter Property="BorderBrush" Value="#FFFFD700"/>
+                                            <Setter Property="BorderThickness" Value="3"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard Storyboard="{StaticResource TalonHoverEnter}" />
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard Storyboard="{StaticResource TalonHoverLeave}" />
+                                </EventTrigger>
+                            </Border.Triggers>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <TextBlock Text="TALON" Foreground="#FFD700" FontFamily="Georgia" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                <Image Source="{Binding FelforditottKartya.ImagePath}" Width="72" Height="108" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <RotateTransform Angle="-12" />
+                                    </Image.RenderTransform>
+                                    <Image.Effect>
+                                        <DropShadowEffect Color="#000" BlurRadius="6" ShadowDepth="4" Opacity="0.6"/>
+                                    </Image.Effect>
+                                </Image>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Sziluett szoveg ures paklira -->
-                        <TextBlock Text="PAKLI" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="PAKLI" Foreground="#55FFFFFF" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         
                         <!-- Pakli megjelenitese -->
-                        <Image x:Name="PakliImage" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="Uniform" StretchDirection="Both" Visibility="{Binding PakliVisibility}">
-                            <Image.Width>
-                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
-                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                </MultiBinding>
-                            </Image.Width>
-                            <Image.Height>
-                                <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
-                                    <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                    <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
-                                </MultiBinding>
-                            </Image.Height>
-                            <Image.Effect>
-                                <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6"/>
-                            </Image.Effect>
-                        </Image>
-                    </Grid>
-                </Border>
+                        <Image Grid.Column="2" x:Name="PakliImage" Source="/SnapszerGame;component/kartyak/hatlap_fuggoleg.png" Stretch="Uniform" StretchDirection="Both" Visibility="{Binding PakliVisibility}">
+                             <Image.Width>
+                                 <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
+                                     <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                     <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                 </MultiBinding>
+                             </Image.Width>
+                             <Image.Height>
+                                 <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
+                                     <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                     <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                 </MultiBinding>
+                             </Image.Height>
+                             <Image.Effect>
+                                 <DropShadowEffect Color="#000" BlurRadius="8" ShadowDepth="4" Opacity="0.6"/>
+                             </Image.Effect>
+                         </Image>
+                     </Grid>
+                 </Border>
 
                 <!-- Dobott lapok helye kijelzese tulsoldalon -->
                 <Border Grid.Column="2" BorderBrush="#88FFFFFF" BorderThickness="2" CornerRadius="8" Background="#11FFFFFF" Padding="4">
@@ -400,6 +487,42 @@
                                         <Setter TargetName="btnBorder" Property="Effect">
                                             <Setter.Value>
                                                 <DropShadowEffect Color="#FF4D4D" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Snapszer Gomb -->
+                    <Button Content="SNAPSZER" Padding="30,15" FontWeight="Bold" FontSize="20" Cursor="Hand" Margin="30,0,0,0"
+                            IsEnabled="{Binding LehetSnapszer}" Click="Snapszer_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
+                                    <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="#666666"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="3" Opacity="0.4"/>
+                                    </Border.Effect>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA1A1A1A"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#CC888888"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#FFD966"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsEnabled" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA221133"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#DDFFD966"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#FFFFFF"/>
+                                        <Setter TargetName="btnBorder" Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#FFD966" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
                                             </Setter.Value>
                                         </Setter>
                                     </MultiTrigger>

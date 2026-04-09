@@ -91,6 +91,73 @@ namespace SnapszerGame.game
 
         public IEnumerable<Szin> BemondottSzinek => _beMondottSzinek;
 
+        // New snapszer-related properties
+        private bool _lehetSnapszer;
+        public bool LehetSnapszer { get => _lehetSnapszer; set { _lehetSnapszer = value; OnPropertyChanged(nameof(LehetSnapszer)); } }
+
+        private bool _playerDeclaredSnapszer;
+        public bool PlayerDeclaredSnapszer { get => _playerDeclaredSnapszer; set { _playerDeclaredSnapszer = value; OnPropertyChanged(nameof(PlayerDeclaredSnapszer)); } }
+
+        private bool _enemyDeclaredSnapszer;
+        public bool EnemyDeclaredSnapszer { get => _enemyDeclaredSnapszer; set { _enemyDeclaredSnapszer = value; OnPropertyChanged(nameof(EnemyDeclaredSnapszer)); } }
+
+        private int _jatekosNyertUtesek = 0;
+        public int JatekosNyertUtesek { get => _jatekosNyertUtesek; set { _jatekosNyertUtesek = value; OnPropertyChanged(nameof(JatekosNyertUtesek)); } }
+
+        private int _ellensegNyertUtesek = 0;
+        public int EllensegNyertUtesek { get => _ellensegNyertUtesek; set { _ellensegNyertUtesek = value; OnPropertyChanged(nameof(EllensegNyertUtesek)); } }
+
+        private int _kiertekeltUtesek = 0;
+        public int KiertekeltUtesek { get => _kiertekeltUtesek; set { _kiertekeltUtesek = value; OnPropertyChanged(nameof(KiertekeltUtesek)); } }
+
+        private bool _lehetTalonCsere;
+        public bool LehetTalonCsere { get => _lehetTalonCsere; set { _lehetTalonCsere = value; OnPropertyChanged(nameof(LehetTalonCsere)); } }
+
+        private int _merkozesNyertJatekos = 0;
+        public int MerkozesNyertJatekos { get => _merkozesNyertJatekos; set { _merkozesNyertJatekos = value; OnPropertyChanged(nameof(MerkozesNyertJatekos)); } }
+
+        private int _merkozesNyertEllenseg = 0;
+        public int MerkozesNyertEllenseg { get => _merkozesNyertEllenseg; set { _merkozesNyertEllenseg = value; OnPropertyChanged(nameof(MerkozesNyertEllenseg)); } }
+
+        private int _roundIndex = 1;
+        public int RoundIndex { get => _roundIndex; set { _roundIndex = value; OnPropertyChanged(nameof(RoundIndex)); } }
+
+        // Reset only round-specific data (keeps match counters)
+        public void ResetRoundState()
+        {
+            JatekosLapok.Clear();
+            EllensegLapok.Clear();
+            _beMondottSzinek.Clear();
+            LastBemondottSzin = null;
+            BemondasEngedelyezett = true;
+
+            AduValasztasFolyamatban = false;
+            EnKovetkezem = false;
+            StatuszUzenet = string.Empty;
+            HasAduChosen = false;
+            AduImagePath = string.Empty;
+            JatekosHivottLap = null;
+            EllensegHivottLap = null;
+            JatekosPont = 0;
+            EllensegPont = 0;
+            PakliVisibility = Visibility.Visible;
+            PakliLezarva = false;
+
+            PlayerDeclaredSnapszer = false;
+            EnemyDeclaredSnapszer = false;
+            JatekosNyertUtesek = 0;
+            EllensegNyertUtesek = 0;
+            KiertekeltUtesek = 0;
+
+            FrissitBemondasLehetoseg();
+
+            // Snapszer allowed only in the first round of the match
+            RoundIndex++;
+            LehetSnapszer = (RoundIndex == 1);
+            LehetTalonCsere = false;
+            FelforditottKartya = null;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
@@ -119,7 +186,20 @@ namespace SnapszerGame.game
             JatekosPont = 0;
             EllensegPont = 0;
             PakliVisibility = Visibility.Visible;
+
+            // reset snapszer & trick counters
+            PlayerDeclaredSnapszer = false;
+            EnemyDeclaredSnapszer = false;
+            JatekosNyertUtesek = 0;
+            EllensegNyertUtesek = 0;
+            KiertekeltUtesek = 0;
+
             FrissitBemondasLehetoseg();
+
+            // Snapszer can be declared immediately after dealing (no tricks yet)
+            // Only allow snapszer in the match's first round
+            RoundIndex = 1;
+            LehetSnapszer = (RoundIndex == 1);
 
             return enKezdek;
         }
@@ -131,6 +211,12 @@ namespace SnapszerGame.game
             LastBemondottSzin = null;
             BemondasEngedelyezett = true;
             FrissitBemondasLehetoseg();
+
+            // after the very first trick is started/completed, snapszer is no longer allowed
+            if (KiertekeltUtesek > 0)
+            {
+                LehetSnapszer = false;
+            }
         }
 
         // Backwards-compatible immediate start (no animation) kept for other callers
@@ -176,6 +262,18 @@ namespace SnapszerGame.game
             PakliVisibility = Visibility.Collapsed;
         }
 
+        // Notify that a card was drawn from the deck; if it matches the currently shown felforditott kartya (talon), mark talon as taken
+        public void NotifyCardDrawn(Card drawn)
+        {
+            if (drawn == null) return;
+            if (FelforditottKartya != null && drawn.ToString() == FelforditottKartya.ToString())
+            {
+                TalonTaken = true;
+                LehetTalonCsere = false;
+                FelforditottKartya = null;
+            }
+        }
+
         // Bemondás lehetőségének vizsgálata (UI frissítés)
         public void FrissitBemondasLehetoseg()
         {
@@ -184,6 +282,8 @@ namespace SnapszerGame.game
             {
                 Lehet20Bemondani = false;
                 Lehet40Bemondani = false;
+                // still update talon swap possibility
+                LehetTalonCsere = (KiertekeltUtesek == 0) && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
                 return;
             }
 
@@ -198,6 +298,12 @@ namespace SnapszerGame.game
                 Lehet20Bemondani = false;
                 Lehet40Bemondani = false;
             }
+
+            // Snapszer is allowed only before any trick has been completed AND only in the match's first round
+            LehetSnapszer = (RoundIndex == 1) && (KiertekeltUtesek == 0) && !PlayerDeclaredSnapszer && !EnemyDeclaredSnapszer;
+
+            // Talon swap allowed only before any trick is evaluated, if talon not yet taken, and if player has adu 'alsokiraly'
+            LehetTalonCsere = (KiertekeltUtesek == 0) && !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
         }
 
         // 20/40 bemondás kezelése (UI gomb)
@@ -232,5 +338,25 @@ namespace SnapszerGame.game
             BemondasEngedelyezett = false;
             FrissitBemondasLehetoseg();
         }
+
+        // Called when player or enemy declares Snapszer
+        public void DeclareSnapszer(bool player)
+        {
+            if (player)
+            {
+                PlayerDeclaredSnapszer = true;
+            }
+            else
+            {
+                EnemyDeclaredSnapszer = true;
+            }
+            // Once declared, no further 20/40 announcements this trick
+            BemondasEngedelyezett = false;
+            LehetSnapszer = false;
+            FrissitBemondasLehetoseg();
+        }
+
+        private bool _talonTaken = false;
+        public bool TalonTaken { get => _talonTaken; set { _talonTaken = value; OnPropertyChanged(nameof(TalonTaken)); } }
     }
- }
+}

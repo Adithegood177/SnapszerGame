@@ -96,6 +96,19 @@ namespace SnapszerGame.game
 
             return (false, false, default);
         }
+
+        // New: Decide whether enemy will declare a snapszer immediately after dealing / before first trick
+        public bool TrySnapszer(IEnumerable<Card> gepKezeben)
+        {
+            var lapok = gepKezeben.ToList();
+            if (!lapok.Any()) return false;
+
+            // Simple heuristic: if enemy's hand point sum is high (e.g., >= 60) and contains several high cards, declare
+            int sum = lapok.Sum(l => l.pont);
+            int highCount = lapok.Count(l => l.ertek == Ertek.Asz || l.ertek == Ertek.Tiz || l.ertek == Ertek.Kiraly);
+
+            return sum >= 60 || highCount >= 3;
+        }
     }
 }
 

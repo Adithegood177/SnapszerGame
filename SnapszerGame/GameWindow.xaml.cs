@@ -135,6 +135,22 @@ namespace SnapszerGame
             _vm.StatuszUzenet = "SNAPSZER bejelentve! Ezt el kell vinni, nem veszthetsz egy ütést sem.";
         }
 
+        private void Nyertem_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_jatekFolyamatban || !_vm.LehetNyertem) return;
+
+            _vm.StatuszUzenet = "NYERTEM bemondva: 5 lapból megvan a 66 pont!";
+            _vm.MerkozesNyertJatekos += 3; // Nyertemmel 3 pont
+            
+            // Ha a vesztesnek (ellenségnek) van legalább 33 pontja, kap 1 pontot
+            if (_vm.EllensegPont >= 33)
+            {
+                _vm.MerkozesNyertEllenseg += 1;
+            }
+
+            ShowRoundResultWithPrompt("Gratulálok, megvan a 66 pont!", $"Kaptál 3 pontot. (Gép: {(_vm.EllensegPont >= 33 ? "+1" : "0")} pont)", true);
+        }
+
         // Helper: sum remaining points (played cards, hands and drain deck)
         private int SumAndDrainRemainingPoints()
         {
@@ -321,30 +337,28 @@ namespace SnapszerGame
                 // If either side declared snapszer, check success/failure immediately
                 if (_vm.PlayerDeclaredSnapszer || _vm.EnemyDeclaredSnapszer)
                 {
-                    // If player declared and failed
+                    // Játékos mondott be snapszert és bukta
                     if (_vm.PlayerDeclaredSnapszer && !enVittem)
                     {
-                        // Award all remaining unassigned points to opponent. Avoid double-counting points already added during tricks.
                         const int TotalPointsInGame = 120;
                         int remaining = TotalPointsInGame - (_vm.JatekosPont + _vm.EllensegPont);
                         if (remaining < 0) remaining = 0;
                         _vm.EllensegPont += remaining;
-                        // Clear remaining deck so no further draws occur
                         _vm.Pakli.SumRemainingPointsAndClear();
-                         // opponent wins the round
-                         _vm.MerkozesNyertEllenseg++;
-                         _vm.StatuszUzenet = "Snapszer bukta: az ellenfel vette az utast. Merlegezunk...";
-                         // clear table and hands
-                         _vm.EllensegHivottLap = null;
-                         _vm.JatekosHivottLap = null;
-                         _vm.JatekosLapok.Clear();
-                         _vm.EllensegLapok.Clear();
-                         _vm.PakliLezarasa();
-                         EndRound(false);
-                         return;
+                        
+                        _vm.MerkozesNyertEllenseg += 7; // Bukott snapszer az ellenfélnek 7 pont
+                        
+                        _vm.EllensegHivottLap = null;
+                        _vm.JatekosHivottLap = null;
+                        _vm.JatekosLapok.Clear();
+                        _vm.EllensegLapok.Clear();
+                        _vm.PakliLezarasa();
+
+                        ShowRoundResultWithPrompt("Elbuktad a Snapszert!", "A gép kap 7 pontot.", false);
+                        return;
                     }
 
-                    // If enemy declared and failed
+                    // Gép mondott snapszert és bukta (te vittél ütést)
                     if (_vm.EnemyDeclaredSnapszer && enVittem)
                     {
                         const int TotalPointsInGame = 120;
@@ -352,45 +366,52 @@ namespace SnapszerGame
                         if (remaining < 0) remaining = 0;
                         _vm.JatekosPont += remaining;
                         _vm.Pakli.SumRemainingPointsAndClear();
-                         // player wins the round
-                         _vm.MerkozesNyertJatekos++;
-                         _vm.StatuszUzenet = "A gep bukta a snapszert, te viszed a maradekot.";
-                         _vm.EllensegHivottLap = null;
-                         _vm.JatekosHivottLap = null;
-                         _vm.JatekosLapok.Clear();
-                         _vm.EllensegLapok.Clear();
-                         _vm.PakliLezarasa();
-                         EndRound(true);
-                         return;
+                        
+                        _vm.MerkozesNyertJatekos += 7; // Bukott snapszer gép részr?l neked 7 pont
+                        
+                        _vm.EllensegHivottLap = null;
+                        _vm.JatekosHivottLap = null;
+                        _vm.JatekosLapok.Clear();
+                        _vm.EllensegLapok.Clear();
+                        _vm.PakliLezarasa();
+
+                        ShowRoundResultWithPrompt("A gép bukta a Snapszert!", "Kaptál 7 pontot.", true);
+                        return;
                     }
 
-                    // If player declared and succeeded on this trick and there are no more cards/hands, award remaining
+                    // Játékos sikeres snapszer (elfogytak a lapok és nem vesztett ütést)
                     if (_vm.PlayerDeclaredSnapszer && enVittem && _vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0)
                     {
                         const int TotalPointsInGame = 120;
                         int remaining = TotalPointsInGame - (_vm.JatekosPont + _vm.EllensegPont);
                         if (remaining < 0) remaining = 0;
                         _vm.JatekosPont += remaining;
-                        _vm.MerkozesNyertJatekos++;
-                         _vm.StatuszUzenet = "Snapszer siker! Megkaptad a maradek pontokat.";
-                         _vm.PakliLezarasa();
-                         EndRound(true);
-                         return;
+                        
+                        _vm.MerkozesNyertJatekos += 7; // Sikeres snapszer 7 pont
+                        if (_vm.EllensegPont >= 33) _vm.MerkozesNyertEllenseg += 1;
+                        
+                        _vm.PakliLezarasa();
+
+                        ShowRoundResultWithPrompt("Snapszer Siker!", $"Kaptál 7 pontot. (Gép: {(_vm.EllensegPont >= 33 ? "+1" : "0")} pont)", true);
+                        return;
                     }
 
-                    // If enemy declared and succeeded similarly
+                    // Gép sikeres snapszer
                     if (_vm.EnemyDeclaredSnapszer && !enVittem && _vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0)
                     {
                         const int TotalPointsInGame = 120;
                         int remaining = TotalPointsInGame - (_vm.JatekosPont + _vm.EllensegPont);
                         if (remaining < 0) remaining = 0;
                         _vm.EllensegPont += remaining;
-                        _vm.MerkozesNyertEllenseg++;
-                         _vm.StatuszUzenet = "A gep sikeresen snapszerelt, megkapta a maradek pontokat.";
-                         _vm.Pakli.SumRemainingPointsAndClear();
-                         _vm.PakliLezarasa();
-                         EndRound(false);
-                         return;
+                        
+                        _vm.MerkozesNyertEllenseg += 7; // Gép sikeres snapszer 7 pont
+                        if (_vm.JatekosPont >= 33) _vm.MerkozesNyertJatekos += 1;
+
+                        _vm.Pakli.SumRemainingPointsAndClear();
+                        _vm.PakliLezarasa();
+
+                        ShowRoundResultWithPrompt("Gép Snapszer Sikerült", $"Gép kapott 7 pontot. (Te: {(_vm.JatekosPont >= 33 ? "+1" : "0")} pont)", false);
+                        return;
                     }
                 }
 
@@ -474,20 +495,51 @@ namespace SnapszerGame
                  if (_vm.JatekosPont >= 66 || _vm.JatekosPont > _vm.EllensegPont)
                  {
                      _vm.StatuszUzenet = $"NYERTEL! Eredmeny: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gep.";
-                     MessageBox.Show($"Gy?ztél!\n\nPontjaid: {_vm.JatekosPont}\nGép pontjai: {_vm.EllensegPont}", "Játék Vége", MessageBoxButton.OK, MessageBoxImage.Information);
+                     // MessageBox eltávolítva 
                  }
                  else
                  {
                      _vm.StatuszUzenet = $"VESZTETTEL! Eredmeny: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gep.";
-                     MessageBox.Show($"Vesztettél!\n\nPontjaid: {_vm.JatekosPont}\nGép pontjai: {_vm.EllensegPont}", "Játék Vége", MessageBoxButton.OK, MessageBoxImage.Error);
+                     // MessageBox eltávolítva
                  }
 
                  // Vissza a fomenube
+                 // Helyette uj koret inditunk pontokkal
+                 if (_vm.JatekosPont >= 66 || _vm.JatekosPont > _vm.EllensegPont)
+                 {
+                     _vm.MerkozesNyertJatekos += 2; // Sima gyozelem 2 pont
+                     if (_vm.EllensegPont >= 33) _vm.MerkozesNyertEllenseg += 1;
+
+                     ShowRoundResultWithPrompt("Kör megnyerve!", $"Kaptál 2 pontot. (Gép: {(_vm.EllensegPont >= 33 ? "+1" : "0")} pont)", true);
+                 }
+                 else
+                 {
+                     _vm.MerkozesNyertEllenseg += 2;
+                     if (_vm.JatekosPont >= 33) _vm.MerkozesNyertJatekos += 1;
+
+                     ShowRoundResultWithPrompt("Kört elvesztetted!", $"A gép kapott 2 pontot. (Te: {(_vm.JatekosPont >= 33 ? "+1" : "0")} pont)", false);
+                 }
+             }
+         }
+
+         private void ShowRoundResultWithPrompt(string title, string subtitle, bool playerWon)
+         {
+             var result = MessageBox.Show($"{title}\n{subtitle}\n\nSzeretnél új kört kezdeni? (Nem = Kilépés)", 
+                                          "Kör Vége", 
+                                          MessageBoxButton.YesNo, 
+                                          MessageBoxImage.Question);
+             
+             if (result == MessageBoxResult.Yes)
+             {
+                 EndRound(playerWon);
+             }
+             else
+             {
                  this.Close();
              }
          }
 
-         private void EndRound(bool playerWonRound)
+         private async void EndRound(bool playerWonRound)
          {
             _jatekFolyamatban = false;
             _vm.EnKovetkezem = false;
@@ -628,6 +680,23 @@ namespace SnapszerGame
 
                 await Task.Delay(1200);
              }
+         }
+
+         private void ShowRoundResult(string title, string subtitle)
+         {
+             RoundResultTitle.Text = title;
+             RoundResultSubtitle.Text = subtitle;
+             RoundResultPanel.Visibility = Visibility.Visible;
+
+             var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.5));
+             var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(0.5)) { BeginTime = TimeSpan.FromSeconds(3) };
+             
+             fadeOut.Completed += (s, e) => {
+                 RoundResultPanel.Visibility = Visibility.Collapsed;
+             };
+
+             RoundResultPanel.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+             Task.Delay(3000).ContinueWith(_ => Dispatcher.Invoke(() => RoundResultPanel.BeginAnimation(UIElement.OpacityProperty, fadeOut)));
          }
     }
 }

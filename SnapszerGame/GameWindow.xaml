@@ -246,6 +246,17 @@
             </StackPanel>
         </Border>
 
+        <!-- Eredmenylap panel -->
+        <Border x:Name="RoundResultPanel" Opacity="0" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5" Background="#CC000000" CornerRadius="8" Padding="12" HorizontalAlignment="Center" VerticalAlignment="Center" Panel.ZIndex="100">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="RoundResultTransform" X="0" Y="0" />
+            </Border.RenderTransform>
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <TextBlock x:Name="RoundResultTitle" Text="" Foreground="#FFD700" FontFamily="Georgia" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="RoundResultSubtitle" Text="" Foreground="#FFF8E7" FontFamily="Georgia" FontSize="24" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <Grid>
             <Grid.RowDefinitions>
                 <!-- Use star sizing so card areas scale with window and won't clip -->
@@ -523,6 +534,42 @@
                                         <Setter TargetName="btnBorder" Property="Effect">
                                             <Setter.Value>
                                                 <DropShadowEffect Color="#FFD966" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- Nyertem Gomb -->
+                    <Button Content="NYERTEM" Padding="30,15" FontWeight="Bold" FontSize="20" Cursor="Hand" Margin="30,0,0,0"
+                            IsEnabled="{Binding LehetNyertem}" Click="Nyertem_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="btnBorder" Background="#881A1A1A" CornerRadius="6" BorderBrush="#AA444444" BorderThickness="2">
+                                    <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="#666666"/>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="3" Opacity="0.4"/>
+                                    </Border.Effect>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA1A1A1A"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#CC888888"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#00FFFF"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsEnabled" Value="True"/>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter TargetName="btnBorder" Property="Background" Value="#AA004444"/>
+                                        <Setter TargetName="btnBorder" Property="BorderBrush" Value="#DD00FFFF"/>
+                                        <Setter TargetName="content" Property="TextElement.Foreground" Value="#FFFFFF"/>
+                                        <Setter TargetName="btnBorder" Property="Effect">
+                                            <Setter.Value>
+                                                <DropShadowEffect Color="#00FFFF" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
                                             </Setter.Value>
                                         </Setter>
                                     </MultiTrigger>

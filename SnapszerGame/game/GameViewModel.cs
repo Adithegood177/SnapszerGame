@@ -3,13 +3,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Collections.Specialized;
 
 namespace SnapszerGame.game
 {
     public class GameViewModel : INotifyPropertyChanged
     {
+        // Pakli és kezek
         public KartyaCsomag Pakli { get; set; }
-
         public ObservableCollection<Card> JatekosLapok { get; set; } = new ObservableCollection<Card>();
         public ObservableCollection<Card> EllensegLapok { get; set; } = new ObservableCollection<Card>();
 
@@ -20,12 +21,14 @@ namespace SnapszerGame.game
             set { _kartya = value; OnPropertyChanged(nameof(FelforditottKartya)); }
         }
 
+        // Körpontok
         private int _jatekosPont;
         public int JatekosPont { get => _jatekosPont; set { _jatekosPont = value; OnPropertyChanged(nameof(JatekosPont)); } }
 
         private int _ellensegPont;
         public int EllensegPont { get => _ellensegPont; set { _ellensegPont = value; OnPropertyChanged(nameof(EllensegPont)); } }
 
+        // Adu
         private Szin _aduSzin;
         private string _aduImagePath = string.Empty;
         private bool _hasAduChosen = false;
@@ -36,7 +39,6 @@ namespace SnapszerGame.game
             set
             {
                 _aduSzin = value;
-                // update helper properties for the view
                 AduImagePath = $"/SnapszerGame;component/szinek/{_aduSzin.ToString().ToLower()}.png";
                 HasAduChosen = true;
                 OnPropertyChanged(nameof(AduSzin));
@@ -44,7 +46,6 @@ namespace SnapszerGame.game
         }
 
         public string AduImagePath { get => _aduImagePath; private set { _aduImagePath = value; OnPropertyChanged(nameof(AduImagePath)); } }
-
         public bool HasAduChosen { get => _hasAduChosen; set { _hasAduChosen = value; OnPropertyChanged(nameof(HasAduChosen)); } }
 
         private bool _aduValasztasFolyamatban;
@@ -53,6 +54,7 @@ namespace SnapszerGame.game
         private bool _enKovetkezem;
         public bool EnKovetkezem { get => _enKovetkezem; set { _enKovetkezem = value; OnPropertyChanged(nameof(EnKovetkezem)); } }
 
+        // Bemondások lehetősége
         private bool _lehet20Bemondani;
         public bool Lehet20Bemondani { get => _lehet20Bemondani; set { _lehet20Bemondani = value; OnPropertyChanged(nameof(Lehet20Bemondani)); } }
 
@@ -65,18 +67,17 @@ namespace SnapszerGame.game
         private bool _pakliLezarva;
         public bool PakliLezarva { get => _pakliLezarva; set { _pakliLezarva = value; OnPropertyChanged(nameof(PakliLezarva)); } }
 
-        // New properties for tricks
+        // Lerakott lapok
         private Card _jatekosHivottLap;
         public Card JatekosHivottLap { get => _jatekosHivottLap; set { _jatekosHivottLap = value; OnPropertyChanged(nameof(JatekosHivottLap)); } }
 
         private Card _ellensegHivottLap;
         public Card EllensegHivottLap { get => _ellensegHivottLap; set { _ellensegHivottLap = value; OnPropertyChanged(nameof(EllensegHivottLap)); } }
 
-        // New: status message shown in UI
+        // Üzenetek
         private string _statuszUzenet = string.Empty;
         public string StatuszUzenet { get => _statuszUzenet; set { _statuszUzenet = value; OnPropertyChanged(nameof(StatuszUzenet)); } }
 
-        // New: main menu visibility binding (in MainWindow)
         private Visibility _fomenLathato = Visibility.Visible;
         public Visibility FomenLathato { get => _fomenLathato; set { _fomenLathato = value; OnPropertyChanged(nameof(FomenLathato)); } }
 
@@ -91,7 +92,7 @@ namespace SnapszerGame.game
 
         public IEnumerable<Szin> BemondottSzinek => _beMondottSzinek;
 
-        // New snapszer-related properties
+        // Snapszer és talon
         private bool _lehetSnapszer;
         public bool LehetSnapszer { get => _lehetSnapszer; set { _lehetSnapszer = value; OnPropertyChanged(nameof(LehetSnapszer)); } }
 
@@ -113,55 +114,42 @@ namespace SnapszerGame.game
         private bool _lehetTalonCsere;
         public bool LehetTalonCsere { get => _lehetTalonCsere; set { _lehetTalonCsere = value; OnPropertyChanged(nameof(LehetTalonCsere)); } }
 
-        private int _merkozesNyertJatekos = 0;
-        public int MerkozesNyertJatekos { get => _merkozesNyertJatekos; set { _merkozesNyertJatekos = value; OnPropertyChanged(nameof(MerkozesNyertJatekos)); } }
+        private bool _talonTaken = false;
+        public bool TalonTaken { get => _talonTaken; set { _talonTaken = value; OnPropertyChanged(nameof(TalonTaken)); } }
 
-        private int _merkozesNyertEllenseg = 0;
-        public int MerkozesNyertEllenseg { get => _merkozesNyertEllenseg; set { _merkozesNyertEllenseg = value; OnPropertyChanged(nameof(MerkozesNyertEllenseg)); } }
+        // Meccspontok
+        private int _meccsPontJatekos = 0;
+        public int MeccsPontJatekos { get => _meccsPontJatekos; set { _meccsPontJatekos = value; OnPropertyChanged(nameof(MeccsPontJatekos)); } }
+
+        private int _meccsPontEllenseg = 0;
+        public int MeccsPontEllenseg { get => _meccsPontEllenseg; set { _meccsPontEllenseg = value; OnPropertyChanged(nameof(MeccsPontEllenseg)); } }
+        
+        // Nyert meccsek = Merkozes
+        public int MerkozesNyertJatekos { get => _meccsPontJatekos; set { _meccsPontJatekos = value; OnPropertyChanged(nameof(MerkozesNyertJatekos)); OnPropertyChanged(nameof(MeccsPontJatekos)); } }
+        public int MerkozesNyertEllenseg { get => _meccsPontEllenseg; set { _meccsPontEllenseg = value; OnPropertyChanged(nameof(MerkozesNyertEllenseg)); OnPropertyChanged(nameof(MeccsPontEllenseg)); } }
 
         private int _roundIndex = 1;
         public int RoundIndex { get => _roundIndex; set { _roundIndex = value; OnPropertyChanged(nameof(RoundIndex)); } }
 
-        // Reset only round-specific data (keeps match counters)
-        public void ResetRoundState()
-        {
-            JatekosLapok.Clear();
-            EllensegLapok.Clear();
-            _beMondottSzinek.Clear();
-            LastBemondottSzin = null;
-            BemondasEngedelyezett = true;
-
-            AduValasztasFolyamatban = false;
-            EnKovetkezem = false;
-            StatuszUzenet = string.Empty;
-            HasAduChosen = false;
-            AduImagePath = string.Empty;
-            JatekosHivottLap = null;
-            EllensegHivottLap = null;
-            JatekosPont = 0;
-            EllensegPont = 0;
-            PakliVisibility = Visibility.Visible;
-            PakliLezarva = false;
-
-            PlayerDeclaredSnapszer = false;
-            EnemyDeclaredSnapszer = false;
-            JatekosNyertUtesek = 0;
-            EllensegNyertUtesek = 0;
-            KiertekeltUtesek = 0;
-
-            FrissitBemondasLehetoseg();
-
-            // Snapszer allowed only in the first round of the match
-            RoundIndex++;
-            LehetSnapszer = (RoundIndex == 1);
-            LehetTalonCsere = false;
-            FelforditottKartya = null;
-        }
+        private bool _lehetNyertem;
+        public bool LehetNyertem { get => _lehetNyertem; set { _lehetNyertem = value; OnPropertyChanged(nameof(LehetNyertem)); } }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        // Prepare game state for dealing; returns true if player will choose adu (player starts)
+        // Konstruktor: reagál a kéz változására
+        public GameViewModel()
+        {
+            JatekosLapok.CollectionChanged += JatekosLapok_CollectionChanged;
+            EllensegLapok.CollectionChanged += (s, e) => FrissitBemondasLehetoseg();
+        }
+
+        private void JatekosLapok_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            FrissitBemondasLehetoseg();
+        }
+
+        // Játék előkészítése
         public bool PrepareGameStart()
         {
             Pakli = new KartyaCsomag();
@@ -175,7 +163,6 @@ namespace SnapszerGame.game
             Random rnd = new Random();
             bool enKezdek = rnd.Next(2) == 0;
 
-            // Reset state
             AduValasztasFolyamatban = false;
             EnKovetkezem = false;
             StatuszUzenet = string.Empty;
@@ -187,24 +174,27 @@ namespace SnapszerGame.game
             EllensegPont = 0;
             PakliVisibility = Visibility.Visible;
 
-            // reset snapszer & trick counters
             PlayerDeclaredSnapszer = false;
             EnemyDeclaredSnapszer = false;
             JatekosNyertUtesek = 0;
             EllensegNyertUtesek = 0;
             KiertekeltUtesek = 0;
 
+            // Merkozes nullázása új játéknál
+            MerkozesNyertJatekos = 0;
+            MerkozesNyertEllenseg = 0;
+
             FrissitBemondasLehetoseg();
 
-            // Snapszer can be declared immediately after dealing (no tricks yet)
-            // Only allow snapszer in the match's first round
+            // Csak az első körben engedjük a 'snapszer' és 'nyertem' bejelentést
             RoundIndex = 1;
             LehetSnapszer = (RoundIndex == 1);
+            LehetNyertem = (RoundIndex == 1);
 
             return enKezdek;
         }
 
-        // Call at the start of every new trick to reset per-trick bemondas state
+        // Új ütés indításakor
         public void StartNewTrick()
         {
             _beMondottSzinek.Clear();
@@ -212,19 +202,17 @@ namespace SnapszerGame.game
             BemondasEngedelyezett = true;
             FrissitBemondasLehetoseg();
 
-            // after the very first trick is started/completed, snapszer is no longer allowed
             if (KiertekeltUtesek > 0)
             {
-                LehetSnapszer = false;
+                LehetSnapszer = false; // miután értékeltünk, snapszer nem lehetséges
             }
         }
 
-        // Backwards-compatible immediate start (no animation) kept for other callers
+        // Gyors indítás (nincs animáció)
         public void JatekInditasa()
         {
             bool enKezdek = PrepareGameStart();
 
-            // Deal immediately 5 cards per hand
             for (int i = 0; i < 5; i++)
             {
                 JatekosLapok.Add(Pakli.Huzas());
@@ -233,36 +221,34 @@ namespace SnapszerGame.game
 
             if (enKezdek)
             {
-                AduValasztasFolyamatban = true; // Játékos választ adut
+                AduValasztasFolyamatban = true;
                 StatuszUzenet = "Válassz adut";
             }
             else
             {
                 AduValasztasFolyamatban = false;
-                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key; // Gép választ adut
-                EnKovetkezem = true; // Gép választott, játékos jön
+                AduSzin = EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key;
+                EnKovetkezem = true;
                 StatuszUzenet = "A gép választott adut";
             }
         }
 
-        // Játékos választ adut (UI hívja)
         public void JatekosAdutValaszt(Szin valasztottSzin)
         {
             AduSzin = valasztottSzin;
             AduValasztasFolyamatban = false;
-            EnKovetkezem = false; // Gép jön hívással
+            EnKovetkezem = false;
             StatuszUzenet = string.Empty;
             FrissitBemondasLehetoseg();
         }
 
-        // Pakli lezárása (gomb vagy üres pakli esetén)
         public void PakliLezarasa()
         {
-            PakliLezarva = true; // Szigorított szabályok élesítése
+            PakliLezarva = true;
             PakliVisibility = Visibility.Collapsed;
         }
 
-        // Notify that a card was drawn from the deck; if it matches the currently shown felforditott kartya (talon), mark talon as taken
+        // Ha lapot huztak, jelezzük (talon kezeléshez)
         public void NotifyCardDrawn(Card drawn)
         {
             if (drawn == null) return;
@@ -274,15 +260,13 @@ namespace SnapszerGame.game
             }
         }
 
-        // Bemondás lehetőségének vizsgálata (UI frissítés)
+        // UI frissítés, bemondási lehetőségek kiszámítása
         public void FrissitBemondasLehetoseg()
         {
-            // Csak saját hívásnál mondhatunk be
             if (!BemondasEngedelyezett)
             {
                 Lehet20Bemondani = false;
                 Lehet40Bemondani = false;
-                // still update talon swap possibility
                 LehetTalonCsere = (KiertekeltUtesek == 0) && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
                 return;
             }
@@ -299,35 +283,55 @@ namespace SnapszerGame.game
                 Lehet40Bemondani = false;
             }
 
-            // Snapszer is allowed only before any trick has been completed AND only in the match's first round
             LehetSnapszer = (RoundIndex == 1) && (KiertekeltUtesek == 0) && !PlayerDeclaredSnapszer && !EnemyDeclaredSnapszer;
-
-            // Talon swap allowed only before any trick is evaluated, if talon not yet taken, and if player has adu 'alsokiraly'
             LehetTalonCsere = (KiertekeltUtesek == 0) && !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
+
+            // Nyertem: öt lap, összesen 66 pont, csak első körben
+            LehetNyertem = (RoundIndex == 1) && (KiertekeltUtesek == 0) && JatekosLapok.Count == 5 && JatekosLapok.Sum(c => c.pont) == 66;
         }
 
-        // 20/40 bemondás kezelése (UI gomb)
+        public void ResetRoundState()
+        {
+            // Következő kör beállításai
+            RoundIndex++;
+            JatekosPont = 0;
+            EllensegPont = 0;
+            _beMondottSzinek.Clear();
+            LastBemondottSzin = null;
+            BemondasEngedelyezett = true;
+            JatekosNyertUtesek = 0;
+            EllensegNyertUtesek = 0;
+            KiertekeltUtesek = 0;
+            PakliLezarva = false;
+            PakliVisibility = Visibility.Visible;
+            PlayerDeclaredSnapszer = false;
+            EnemyDeclaredSnapszer = false;
+            JatekosHivottLap = null;
+            EllensegHivottLap = null;
+            HasAduChosen = false;
+            JatekosLapok.Clear();
+            EllensegLapok.Clear();
+            FrissitBemondasLehetoseg();
+        }
+
         public void Bemond(bool is40)
         {
             if (!BemondasEngedelyezett) return;
             var bemondasok = _logic.LehetsegesBemondasok(JatekosLapok.ToList()).Except(_beMondottSzinek).ToList();
             var cel = is40 ? bemondasok.FirstOrDefault(s => s == AduSzin) : bemondasok.FirstOrDefault(s => s != AduSzin);
-            
-            // Reset last
+
             LastBemondottSzin = null;
-            // If it found a valid suit (since enum is value type, defaulting to 0 exists, so check if list actually had it)
             if (bemondasok.Contains(cel))
             {
                 int szerzettPont = is40 ? 40 : 20;
                 JatekosPont += szerzettPont;
                 _beMondottSzinek.Add(cel);
                 LastBemondottSzin = cel;
-                BemondasEngedelyezett = false; // only one bemondas allowed this trick
+                BemondasEngedelyezett = false;
                 FrissitBemondasLehetoseg();
             }
         }
 
-        // Called when the enemy announces a bemondas
         public void EnemyBemond(Szin szin, bool is40)
         {
             if (!BemondasEngedelyezett) return;
@@ -339,24 +343,12 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
         }
 
-        // Called when player or enemy declares Snapszer
         public void DeclareSnapszer(bool player)
         {
-            if (player)
-            {
-                PlayerDeclaredSnapszer = true;
-            }
-            else
-            {
-                EnemyDeclaredSnapszer = true;
-            }
-            // Once declared, no further 20/40 announcements this trick
+            if (player) PlayerDeclaredSnapszer = true; else EnemyDeclaredSnapszer = true;
             BemondasEngedelyezett = false;
             LehetSnapszer = false;
             FrissitBemondasLehetoseg();
         }
-
-        private bool _talonTaken = false;
-        public bool TalonTaken { get => _talonTaken; set { _talonTaken = value; OnPropertyChanged(nameof(TalonTaken)); } }
     }
 }

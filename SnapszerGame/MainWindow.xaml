@@ -8,28 +8,48 @@
         ResizeMode="CanMinimize"
         Background="#1A0A00">
 
-  <Window.Resources>
+    <Window.Resources>
 		<local:MultiplyConverter x:Key="Mul" />
 
-		<!-- Menü gomb stílus -->
+		<!-- Lebegő animációk a kártya ikonokhoz -->
+		<Storyboard x:Key="FloatAnim1" RepeatBehavior="Forever" AutoReverse="True">
+			<DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="-15" To="15" Duration="0:0:3.5" />
+		</Storyboard>
+		<Storyboard x:Key="FloatAnim2" RepeatBehavior="Forever" AutoReverse="True">
+			<DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="-10" To="20" Duration="0:0:4.2" />
+		</Storyboard>
+		<Storyboard x:Key="FloatAnim3" RepeatBehavior="Forever" AutoReverse="True">
+			<DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="-20" To="10" Duration="0:0:3.8" />
+		</Storyboard>
+		<Storyboard x:Key="FloatAnim4" RepeatBehavior="Forever" AutoReverse="True">
+			<DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="-12" To="18" Duration="0:0:4.5" />
+		</Storyboard>
+
+        <!-- Pulzáló cím effekt -->
+        <Storyboard x:Key="TitleGlowAnim" RepeatBehavior="Forever" AutoReverse="True">
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" From="20" To="45" Duration="0:0:2.5" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" From="0.75" To="1.0" Duration="0:0:2.5" />
+        </Storyboard>
+
+		<!-- Menü gomb stílus (Felnagyítva kitölti a teret) -->
 		<Style x:Key="MenuGombStilus" TargetType="Button">
 			<Setter Property="Background" Value="#8B1A1A"/>
 			<Setter Property="Foreground" Value="#F5DEB3"/>
 			<Setter Property="FontFamily" Value="Georgia"/>
-			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="FontSize" Value="24"/>
 			<Setter Property="FontWeight" Value="Bold"/>
-			<Setter Property="Height" Value="48"/>
-			<Setter Property="Width" Value="220"/>
+			<Setter Property="Height" Value="65"/>
+			<Setter Property="Width" Value="320"/>
 			<Setter Property="Cursor" Value="Hand"/>
 			<Setter Property="BorderBrush" Value="#D4A017"/>
-			<Setter Property="BorderThickness" Value="2"/>
+			<Setter Property="BorderThickness" Value="3"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="Button">
 						<Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4">
+                                CornerRadius="8">
 							<ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
 						</Border>
@@ -40,6 +60,7 @@
 							</Trigger>
 							<Trigger Property="IsPressed" Value="True">
 								<Setter Property="Background" Value="#6B0F0F"/>
+								<Setter Property="BorderThickness" Value="2"/>
 							</Trigger>
 						</ControlTemplate.Triggers>
 					</ControlTemplate>
@@ -83,31 +104,54 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
-
 	</Window.Resources>
 
 	<Grid>
 
-		<!-- Háttér -->
+		<!-- Háttér és Asztal -->
 		<Rectangle>
 			<Rectangle.Fill>
-				<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-					<GradientStop Color="#1A0A00" Offset="0"/>
-					<GradientStop Color="#2C1200" Offset="0.5"/>
-					<GradientStop Color="#1A0A00" Offset="1"/>
-				</LinearGradientBrush>
+				<RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="1" RadiusY="1">
+					<GradientStop Color="#2C1200" Offset="0"/>
+					<GradientStop Color="#1A0A00" Offset="0.8"/>
+					<GradientStop Color="#0A0400" Offset="1"/>
+				</RadialGradientBrush>
 			</Rectangle.Fill>
 		</Rectangle>
+        
+        <!-- Zöld posztó asztal szerűség középen ami megtöri a teret -->
+        <Border Margin="100, 70" CornerRadius="500" BorderBrush="#3b1e08" BorderThickness="25" Opacity="0.95">
+            <Border.Background>
+                <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.9" RadiusY="0.9">
+                    <GradientStop Color="#0F7A2A" Offset="0"/>
+                    <GradientStop Color="#074516" Offset="0.7"/>
+                    <GradientStop Color="#021C07" Offset="1"/>
+                </RadialGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="80" ShadowDepth="25" Opacity="0.95"/>
+            </Border.Effect>
+            <!-- Arany belső perem dekorációként -->
+            <Border CornerRadius="480" BorderBrush="#D4A017" BorderThickness="2" Margin="6" Opacity="0.5">
+                <Border.Effect>
+                    <DropShadowEffect Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                </Border.Effect>
+            </Border>
+        </Border>
 
-		<!-- Dekoratív keret -->
-		<Border BorderBrush="#D4A017" BorderThickness="3" Margin="10" CornerRadius="8"/>
-		<Border BorderBrush="#8B6914" BorderThickness="1" Margin="16" CornerRadius="6"/>
+		<!-- Dekoratív keretek -->
+		<Border BorderBrush="#D4A017" BorderThickness="3" Margin="10" CornerRadius="12">
+            <Border.Effect>
+                <DropShadowEffect Color="#FFD700" BlurRadius="8" ShadowDepth="0" Opacity="0.3"/>
+            </Border.Effect>
+        </Border>
+		<Border BorderBrush="#8B6914" BorderThickness="1" Margin="20" CornerRadius="10"/>
 
 		<!-- ── MENÜSOR ── -->
 		<Menu Background="#2C1200" Foreground="#F5DEB3"
-              FontFamily="Georgia" FontSize="14"
-              VerticalAlignment="Top" Margin="15,15,15,0"
-              BorderBrush="#D4A017" BorderThickness="1">
+              FontFamily="Georgia" FontSize="16"
+              VerticalAlignment="Top" Margin="20,20,20,0"
+              BorderBrush="#D4A017" BorderThickness="1,1,1,2" Padding="5">
 			<Menu.Resources>
 				<Style TargetType="MenuItem">
 					<Setter Property="Foreground" Value="#F5DEB3"/>
@@ -120,113 +164,171 @@
 					</Style.Triggers>
 				</Style>
 			</Menu.Resources>
-			<MenuItem Header="🃏  Játék">
+			<MenuItem Header="🃏  Játék" Padding="15,5">
 				<MenuItem Header="▶  Játék indítása" Click="StartGomb_Click"/>
 				<Separator Background="#D4A017"/>
 				<MenuItem Header="✖  Kilépés" Click="KilepesMenu_Click"/>
 			</MenuItem>
-			<MenuItem Header="ℹ  Névjegy">
-				<MenuItem Header="Snapszer v1.0" IsEnabled="False"/>
+			<MenuItem Header="ℹ  Névjegy" Padding="15,5">
+				<MenuItem Header="Snapszer v1.1" IsEnabled="False"/>
 				<MenuItem Header="Magyar kártyajáték" IsEnabled="False"/>
 			</MenuItem>
 		</Menu>
 
 		<!-- FŐMENÜ PANEL -->
-		<Grid Margin="15,50,15,40"
+		<Grid Margin="15,80,15,60"
               Visibility="{Binding FomenLathato}">
 
 			<!-- Cím -->
-			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"
-                        Margin="0,18,0,0">
+			<StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,40,0,0">
 				<TextBlock Text="SNAPSZER"
-                           FontFamily="Georgia" FontSize="58" FontWeight="Bold"
-                           Foreground="#D4A017" HorizontalAlignment="Center">
+                           FontFamily="Georgia" FontSize="110" FontWeight="Bold"
+                           Foreground="#D4A017" HorizontalAlignment="Center" TextAlignment="Center">
 					<TextBlock.Effect>
-						<DropShadowEffect Color="#8B1A1A" BlurRadius="24"
-                                          ShadowDepth="0" Opacity="0.9"/>
+                        <DropShadowEffect Color="#8B1A1A" BlurRadius="30" ShadowDepth="8" Opacity="1.0" Direction="320"/>
 					</TextBlock.Effect>
+                    <TextBlock.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource TitleGlowAnim}"/>
+                        </EventTrigger>
+                    </TextBlock.Triggers>
 				</TextBlock>
 				<TextBlock Text="Magyar kártyajáték"
-                           FontFamily="Georgia" FontSize="15" FontStyle="Italic"
-                           Foreground="#A08040" HorizontalAlignment="Center"
-                           Margin="0,2,0,0"/>
+                           FontFamily="Georgia" FontSize="32" FontStyle="Italic"
+                           Foreground="#E5C060" HorizontalAlignment="Center"
+                           Margin="0,5,0,0">
+                    <TextBlock.Effect>
+                        <DropShadowEffect Color="#000" BlurRadius="10" ShadowDepth="3" Opacity="0.8"/>
+                    </TextBlock.Effect>
+                </TextBlock>
 			</StackPanel>
 
-			<!-- 4 SZÍN IKON – legyező elrendezés, egymásba lógva -->
+			<!-- 4 SZÍN IKON – Nagyítva és Animálva középen -->
 			<Canvas HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Width="340" Height="170" Margin="0,50,0,0">
+                    Width="800" Height="400" Margin="0,40,0,0">
 
-				<!-- MAKK – bal külső, -18° -->
-				<Image Source="Images/makk.png" Width="115" Height="115"
-                       Canvas.Left="5" Canvas.Top="30"
+				<!-- MAKK -->
+				<Image Source="/SnapszerGame;component/kartyak/makk_asz.png" Width="260" Height="360"
+                       Canvas.Left="10" Canvas.Top="80"
                        Panel.ZIndex="1"
-                       RenderTransformOrigin="0.5,0.95">
+                       RenderTransformOrigin="0.5,0.85">
 					<Image.RenderTransform>
-						<RotateTransform Angle="-18"/>
+						<TransformGroup>
+                            <RotateTransform Angle="-24"/>
+                            <TranslateTransform Y="0" />
+                        </TransformGroup>
 					</Image.RenderTransform>
 					<Image.Effect>
-						<DropShadowEffect Color="#000" BlurRadius="12" ShadowDepth="5" Opacity="0.65"/>
+						<DropShadowEffect Color="#000" BlurRadius="20" ShadowDepth="8" Opacity="0.75"/>
 					</Image.Effect>
+                    <Image.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource FloatAnim1}"/>
+                        </EventTrigger>
+                    </Image.Triggers>
 				</Image>
 
-				<!-- TÖK – bal belső, -6° -->
-				<Image Source="Images/tok.png" Width="115" Height="115"
-                       Canvas.Left="80" Canvas.Top="10"
+				<!-- TÖK -->
+				<Image Source="/SnapszerGame;component/kartyak/tok_asz.png" Width="280" Height="380"
+                       Canvas.Left="180" Canvas.Top="20"
                        Panel.ZIndex="2"
-                       RenderTransformOrigin="0.5,0.95">
+                       RenderTransformOrigin="0.5,0.85">
 					<Image.RenderTransform>
-						<RotateTransform Angle="-6"/>
+                        <TransformGroup>
+						    <RotateTransform Angle="-8"/>
+                            <TranslateTransform Y="0" />
+                        </TransformGroup>
 					</Image.RenderTransform>
 					<Image.Effect>
-						<DropShadowEffect Color="#000" BlurRadius="12" ShadowDepth="5" Opacity="0.65"/>
+						<DropShadowEffect Color="#000" BlurRadius="25" ShadowDepth="12" Opacity="0.8"/>
 					</Image.Effect>
+                    <Image.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource FloatAnim2}"/>
+                        </EventTrigger>
+                    </Image.Triggers>
 				</Image>
 
-				<!-- ZÖLD – jobb belső, +6° -->
-				<Image Source="Images/zold.png" Width="115" Height="115"
-                       Canvas.Left="155" Canvas.Top="10"
+				<!-- ZÖLD -->
+				<Image Source="/SnapszerGame;component/kartyak/zold_asz.png" Width="280" Height="380"
+                       Canvas.Left="340" Canvas.Top="20"
                        Panel.ZIndex="2"
-                       RenderTransformOrigin="0.5,0.95">
+                       RenderTransformOrigin="0.5,0.85">
 					<Image.RenderTransform>
-						<RotateTransform Angle="6"/>
+                        <TransformGroup>
+						    <RotateTransform Angle="8"/>
+                            <TranslateTransform Y="0" />
+                        </TransformGroup>
 					</Image.RenderTransform>
 					<Image.Effect>
-						<DropShadowEffect Color="#000" BlurRadius="12" ShadowDepth="5" Opacity="0.65"/>
+						<DropShadowEffect Color="#000" BlurRadius="25" ShadowDepth="12" Opacity="0.8"/>
 					</Image.Effect>
+                    <Image.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource FloatAnim3}"/>
+                        </EventTrigger>
+                    </Image.Triggers>
 				</Image>
 
-				<!-- PIROS – jobb külső, +18° -->
-				<Image Source="Images/piros.png" Width="115" Height="115"
-                       Canvas.Left="225" Canvas.Top="30"
+				<!-- PIROS -->
+				<Image Source="/SnapszerGame;component/kartyak/piros_asz.png" Width="260" Height="360"
+                       Canvas.Left="530" Canvas.Top="80"
                        Panel.ZIndex="1"
-                       RenderTransformOrigin="0.5,0.95">
+                       RenderTransformOrigin="0.5,0.85">
 					<Image.RenderTransform>
-						<RotateTransform Angle="18"/>
+                        <TransformGroup>
+						    <RotateTransform Angle="24"/>
+                            <TranslateTransform Y="0" />
+                        </TransformGroup>
 					</Image.RenderTransform>
 					<Image.Effect>
-						<DropShadowEffect Color="#000" BlurRadius="12" ShadowDepth="5" Opacity="0.65"/>
+						<DropShadowEffect Color="#000" BlurRadius="20" ShadowDepth="8" Opacity="0.75"/>
 					</Image.Effect>
+                    <Image.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource FloatAnim4}"/>
+                        </EventTrigger>
+                    </Image.Triggers>
 				</Image>
 
 			</Canvas>
 
 			<!-- Gombok alul -->
 			<StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center"
-                        Margin="0,0,0,8">
-				<Button Content="▶  Játék indítása"
+                        Margin="0,0,0,20">
+				<Button Content="▶  JÁTÉK INDÍTÁSA"
                         Style="{StaticResource MenuGombStilus}"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,14"
-                        Click="StartGomb_Click"/>
-				<Button Content="📜  Szabályzat"
+                        Margin="0,0,0,20"
+                        Click="StartGomb_Click">
+                    <Button.Effect>
+                        <DropShadowEffect Color="#FFD700" BlurRadius="15" ShadowDepth="2" Opacity="0.6"/>
+                    </Button.Effect>
+                    <Button.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" From="15" To="35" Duration="0:0:1.5" />
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" From="0.4" To="0.9" Duration="0:0:1.5" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Button.Triggers>
+                </Button>
+				<Button Content="📜  SZABÁLYZAT"
                         Style="{StaticResource MenuGombStilus}"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,14"
-                        Click="SzabalyzatGomb_Click"/>
-				<Button Content="✖  Kilépés"
+                        Margin="0,0,0,20"
+                        Click="SzabalyzatGomb_Click">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="4" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
+				<Button Content="✖  KILÉPÉS"
                         Style="{StaticResource MenuGombStilus}"
-                        HorizontalAlignment="Center"
-                        Click="KilepesGomb_Click"/>
+                        Click="KilepesGomb_Click">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="4" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
 			</StackPanel>
 
 		</Grid>

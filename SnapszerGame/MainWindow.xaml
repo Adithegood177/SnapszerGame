@@ -218,6 +218,11 @@
                         HorizontalAlignment="Center"
                         Margin="0,0,0,14"
                         Click="StartGomb_Click"/>
+				<Button Content="📜  Szabályzat"
+                        Style="{StaticResource MenuGombStilus}"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,14"
+                        Click="SzabalyzatGomb_Click"/>
 				<Button Content="✖  Kilépés"
                         Style="{StaticResource MenuGombStilus}"
                         HorizontalAlignment="Center"

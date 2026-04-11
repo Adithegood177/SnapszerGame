@@ -31,6 +31,13 @@ namespace SnapszerGame
             await gw.StartDealing(playerStarts);
         }
 
+        private void SzabalyzatGomb_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new SzabalyzatWindow();
+            win.Owner = this;
+            win.ShowDialog();
+        }
+
         // Kilépés menü
         private void KilepesMenu_Click(object sender, RoutedEventArgs e)
         {

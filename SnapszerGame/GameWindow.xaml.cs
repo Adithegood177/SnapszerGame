@@ -23,14 +23,14 @@ namespace SnapszerGame
             _gep = new Enemy(new SnapszerLogic());
         }
 
-        // Animate dealing: alternate cards, then prompt for adu if player starts
+        // Osztás animálása: felváltva kapjuk a lapokat, majd ha a játékos kezd, kérjük be az adut
         public async Task StartDealing(bool playerStarts)
         {
-            // Clear any existing hands (safety)
+            // Biztonsági törlés, nehogy maradjon valami a kézben korábbról
             _vm.JatekosLapok.Clear();
             _vm.EllensegLapok.Clear();
 
-            // Simple alternate dealing animation
+            // Szépen felváltva adogatjuk a lapokat
             for (int i = 0; i < 5; i++)
             {
                 if (playerStarts)
@@ -55,15 +55,15 @@ namespace SnapszerGame
                 }
             }
 
-            // Dealing finished - handle adu choice
-            // Update talon (peek last card) so UI can show it
+            // Kiosztottunk mindent, jöhet a talon és az adu beállítása
+            // Lekérjük az utolsó lapot (a talont), hogy kint legyen a képerny?n
             _vm.FelforditottKartya = _vm.Pakli.PeekLast();
             if (playerStarts)
             {
                 _vm.AduValasztasFolyamatban = true;
                 _vm.StatuszUzenet = "Válassz adut";
 
-                // show adu selector modal on top of game window
+                // Feldobjuk az aduválasztó ablakot a játékablak f?lé
                 var aduWindow = new AduValasztoWindow();
                 aduWindow.Owner = this;
                 var result = aduWindow.ShowDialog();
@@ -71,14 +71,14 @@ namespace SnapszerGame
                 {
                     _vm.JatekosAdutValaszt(aduWindow.ValasztottAdu);
                     _jatekFolyamatban = true;
-                    // Jatekos jon
+                    // Most a játékos jön
                     _vm.EnKovetkezem = true;
                     _vm.FrissitBemondasLehetoseg();
-                    _vm.StatuszUzenet = "Te jossz hivassal!";
+                    _vm.StatuszUzenet = "Te jössz hívással!";
                 }
                 else
                 {
-                    // If dialog canceled
+                    // Ha véletlenül kinyomná (bár elvileg nem nagyon lehet)
                     _vm.AduValasztasFolyamatban = false;
                     _vm.StatuszUzenet = string.Empty;
                 }
@@ -87,12 +87,12 @@ namespace SnapszerGame
             {
                 _vm.AduValasztasFolyamatban = false;
                 _vm.AduSzin = _vm.EllensegLapok.GroupBy(l => l.szin).OrderByDescending(g => g.Count()).First().Key;
-                _vm.StatuszUzenet = $"A gep valasztott adut: {_vm.AduSzin}. Hivashoz keszul...";
+                _vm.StatuszUzenet = $"A gép választott adut: {_vm.AduSzin}. Híváshoz készül...";
                 _vm.EnKovetkezem = false;
                 _jatekFolyamatban = true;
                 _vm.FrissitBemondasLehetoseg();
 
-                // Enemy may announce immediately after dealing (20/40)
+                // A gép esetleg mondhat 20-at vagy 40-et rögtön az osztás után
                 var bem = _gep.TryBemond(_vm.EllensegLapok, _vm.AduSzin, _vm.BemondottSzinek);
                 if (bem.did)
                 {
@@ -100,11 +100,11 @@ namespace SnapszerGame
                     await MutassBemondasAnimaciot(bem.is40, false);
                 }
 
-                // Enemy may also declare snapszer immediately after dealing
+                // Vagy akár egyb?l bemondhatja a snapszert is
                 if (_gep.TrySnapszer(_vm.EllensegLapok))
                 {
                     _vm.DeclareSnapszer(false);
-                    _vm.StatuszUzenet = "A gep snapszert jelentett be!";
+                    _vm.StatuszUzenet = "A gép snapszert jelentett be!";
                 }
 
                 await Task.Delay(1500);
@@ -112,25 +112,33 @@ namespace SnapszerGame
             }
         }
 
-        // Bemondasok
+        // --- ÚJ GOMB ---
+        private void SzabalyzatGomb_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new SzabalyzatWindow();
+            win.Owner = this;
+            win.ShowDialog();
+        }
+
+        // 20 és 40 gombok eventjei
         private void Bemond20_Click(object sender, RoutedEventArgs e)
         {
             _vm.Bemond(false);
-            GyozveEllenorzes(); // Ellenorizni kell, h a bemondassal nyert-e
+            GyozveEllenorzes(); // Lecsekkoljuk egyb?l, mert a pontokkal nyerhet is
         }
 
         private void Bemond40_Click(object sender, RoutedEventArgs e)
         {
             _vm.Bemond(true);
-            GyozveEllenorzes(); // Ellenorizni kell, h a bemondassal nyert-e
+            GyozveEllenorzes(); // Ugyanúgy, le kell csekkolni, hátha megvan a 66 pont
         }
 
-        // Snapszer (declare) button handler
+        // Snapszer gomb, mikor a játékos vállalja, hogy mindent visz
         private void Snapszer_Click(object sender, RoutedEventArgs e)
         {
             if (!_jatekFolyamatban || !_vm.LehetSnapszer) return;
 
-            // Mark that player declared snapszer. Actual resolution happens as tricks are evaluated / at game end.
+            // Bejegyezzük, hogy a játékos snapszert mondott. Az ellen?rzés kés?bb folyamatos.
             _vm.DeclareSnapszer(true);
             _vm.StatuszUzenet = "SNAPSZER bejelentve! Ezt el kell vinni, nem veszthetsz egy ütést sem.";
         }
@@ -140,9 +148,9 @@ namespace SnapszerGame
             if (!_jatekFolyamatban || !_vm.LehetNyertem) return;
 
             _vm.StatuszUzenet = "NYERTEM bemondva: 5 lapból megvan a 66 pont!";
-            _vm.MerkozesNyertJatekos += 3; // Nyertemmel 3 pont
+            _vm.MerkozesNyertJatekos += 3; // Ezzel kemény 3 pontot kapunk a meccsen
             
-            // Ha a vesztesnek (ellenségnek) van legalább 33 pontja, kap 1 pontot
+            // Ha közben a gép már összeszedett 33 pontot valahogy (mondjuk egy 40-es bemondással id?közben?), akkor ? is kap 1 pontot
             if (_vm.EllensegPont >= 33)
             {
                 _vm.MerkozesNyertEllenseg += 1;
@@ -151,7 +159,7 @@ namespace SnapszerGame
             ShowRoundResultWithPrompt("Gratulálok, megvan a 66 pont!", $"Kaptál 3 pontot. (Gép: {(_vm.EllensegPont >= 33 ? "+1" : "0")} pont)", true);
         }
 
-        // Helper: sum remaining points (played cards, hands and drain deck)
+        // Segédfüggvény: összegzi a kézben maradt lapok és a talon pontjait a kövégi elszámoláshoz
         private int SumAndDrainRemainingPoints()
         {
             int remainingPoints = 0;
@@ -161,7 +169,7 @@ namespace SnapszerGame
             remainingPoints += _vm.JatekosLapok.Sum(c => c.pont);
             remainingPoints += _vm.EllensegLapok.Sum(c => c.pont);
 
-            // Drain deck
+            // Kifogyasztjuk a paklit, beleszámolva a maradék pontokat
             while (true)
             {
                 var c = _vm.Pakli.Huzas();
@@ -173,7 +181,7 @@ namespace SnapszerGame
             return remainingPoints;
         }
 
-        // Kartyara kattintas (Jatekos lejatssza a lapjat)
+        // Ide jön be, mikor a játékos rákattint egy lapjára, hogy leteszi
         private async void ItemsControl_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!_jatekFolyamatban || !_vm.EnKovetkezem) return;
@@ -184,7 +192,7 @@ namespace SnapszerGame
             var card = felement.DataContext as Card;
             if (card != null)
             {
-                // If player still can declare snapszer at moment of first card play, they can also declare via button pre-play. We respect explicit declare via Snapszer_Click.
+                // Még a lap lerakása el?tt is mondhattunk volna snapszert a gombbal, de ha ideértünk, lejátsszuk a lapot
                 await JatekosHiv(card);
             }
         }
@@ -193,26 +201,26 @@ namespace SnapszerGame
         {
             SnapszerLogic valLogic = new SnapszerLogic();
 
-            // Ha a jatekos valaszol, ellenorizni kell, hogy szabalyos-e
+            // Ha a gép már hívott és mi válaszolunk, ellen?rizni kell a szabályokat (zárt paklinál színre szín)
             if (_vm.EllensegHivottLap != null)
             {
                 if (!valLogic.SzabalyosKartyaRakas(lerakandoKartya, _vm.EllensegHivottLap, _vm.AduSzin, _vm.PakliLezarva, _vm.JatekosLapok))
                 {
-                    _vm.StatuszUzenet = "Ezt a lapot szabalyellenes lerakni!";
+                    _vm.StatuszUzenet = "Ezt a lapot szabályellenes lerakni!";
                     return;
                 }
             }
 
-            // Jatekos lerakja
+            // Ha átment az ellen?rzésen, kikerül a kézb?l és lekerül az asztalra
             _vm.JatekosLapok.Remove(lerakandoKartya);
             _vm.JatekosHivottLap = lerakandoKartya;
 
-            _vm.EnKovetkezem = false; // Kikapcsoljuk az interakciot amig a kor lejatszodik
+            _vm.EnKovetkezem = false; // Átmenetileg letiltjuk a kattintgatást nullára
 
             if (_vm.EllensegHivottLap == null)
             {
-                // Jatekos hivott
-                _vm.StatuszUzenet = "Te hivtal. Gep valaszol...";
+                // Els?nek tettük le, most a gépnek kell reagálnia
+                _vm.StatuszUzenet = "Te hívtál. Gép válaszol...";
                 await Task.Delay(1000);
                 
                 var gepValasz = _gep.GepValaszol(lerakandoKartya, _vm.AduSzin, _vm.PakliLezarva, _vm.EllensegLapok);
@@ -220,13 +228,13 @@ namespace SnapszerGame
                 _vm.EllensegHivottLap = gepValasz;
             }
 
-            // Ki ertekeli a kort!
+            // Most már mindketten leraktak valamit, nézzük meg ki viszi
             await UtesKiErtekelese();
         }
 
         private async Task GepHiv()
         {
-            // Enemy may decide to bemond before leading
+            // Miel?tt lépne, megnézi tud-e 20/40-et mondani
             var tryBem = _gep.TryBemond(_vm.EllensegLapok, _vm.AduSzin, _vm.BemondottSzinek);
             if (tryBem.did)
             {
@@ -238,52 +246,52 @@ namespace SnapszerGame
             _vm.EllensegLapok.Remove(hivottLap);
             _vm.EllensegHivottLap = hivottLap;
             
-            _vm.StatuszUzenet = "A gep hivott, te jossz!";
+            _vm.StatuszUzenet = "A gép hívott, te jössz!";
             _vm.EnKovetkezem = true;
             _vm.FrissitBemondasLehetoseg();
         }
 
         private void TalonCsere_Click(object sender, RoutedEventArgs e)
         {
-            // Can only swap if allowed by VM
+            // A ViewModel dönti el, engedi-e a cserét
             if (!_vm.LehetTalonCsere) return;
 
-            // Player must have adu alsokiraly in hand
+            // Kell a kezünkbe az adu alsó, anélkül nem megy
             var playerAlsokiraly = _vm.JatekosLapok.FirstOrDefault(c => c.szin == _vm.AduSzin && c.ertek == Ertek.Alsokiraly);
             var talon = _vm.Pakli.PeekLast();
             if (playerAlsokiraly == null || talon == null) return;
 
-            // Swap: replace last with player's card, give last card to player
+            // Kicseréljük az utolsó lapra
             var oldLast = _vm.Pakli.ReplaceLast(playerAlsokiraly);
 
-            // Remove player's card from hand and give the old last card
+            // Kivesszük az alsót a kezünkb?l, s a helyére bemegy a felhúzott lap
             _vm.JatekosLapok.Remove(playerAlsokiraly);
             _vm.JatekosLapok.Add(oldLast);
 
-            // Update the viewmodel's felforditott card so UI shows rotated card under deck
+            // Szólunk a UI-nak, hogy alul a talon már másik lap lett
             _vm.FelforditottKartya = oldLast;
 
-            // After swapping, talon swap is no longer allowed
+            // Megcsináltuk a cserét, többet nem lehet ezel
             _vm.LehetTalonCsere = false;
-            _vm.StatuszUzenet = "Talon csere megtortent.";
+            _vm.StatuszUzenet = "Talon csere megtörtént.";
         }
 
         private void TalonArea_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // If swap is allowed, perform it; otherwise show message
+            // Ha ráklikkelt a talonra és lehet cserélni, meghívjuk
             if (_vm.LehetTalonCsere)
             {
                 TalonCsere_Click(sender, null);
             }
             else
             {
-                _vm.StatuszUzenet = "Talon csere nem megengedett. Csak az els? körben és ha van adu alsókirályod.";
+                _vm.StatuszUzenet = "Talon csere nem engedélyezett.";
             }
         }
 
         private async Task UtesKiErtekelese()
         {
-            await Task.Delay(2000); // 2 masodperc nezelodes
+            await Task.Delay(2000); // 2 másodpercet várunk, hogy látszódjanak a lapok miel?tt elt?nnek
             
             SnapszerLogic logic = new SnapszerLogic();
             var dummyHivo = new Player("1", 0, 0);
@@ -291,8 +299,7 @@ namespace SnapszerGame
 
             Player nyertes;
 
-            // Aki eloszor rakott, az e az elony a fuggvenyben bemenetken.
-            // P1 = Hivott, P2 = Valaszolt. Szamoltassuk ki.
+            // Akkor értékelünk, ha már tényleg mind a két lap lenn van
             if (_vm.EllensegHivottLap != null && _vm.JatekosHivottLap != null)
             {
                 bool enHivtam = _vm.EllensegHivottLap != null && _vm.JatekosHivottLap != null && _vm.StatuszUzenet.Contains("valaszol");
@@ -301,43 +308,42 @@ namespace SnapszerGame
 
                 if (_vm.StatuszUzenet.Contains("valaszol") || _vm.StatuszUzenet.Contains("valaszolt"))
                 {
-                   // En hivtam
+                   // Mi hívtunk
                    nyertes = logic.GetWinnerOfTrick(_vm.JatekosHivottLap, _vm.EllensegHivottLap, dummyHivo, dummyValaszolo, _vm.AduSzin);
                    enVittem = (nyertes == dummyHivo);
                 }
                 else
                 {
-                   // Gep hivott
+                   // Gép hívott
                    nyertes = logic.GetWinnerOfTrick(_vm.EllensegHivottLap, _vm.JatekosHivottLap, dummyHivo, dummyValaszolo, _vm.AduSzin);
                    enVittem = (nyertes == dummyValaszolo);
                 }
 
                 if (enVittem)
                 {
-                    _vm.StatuszUzenet = "Ezt te vitted! Hivhatsz.";
+                    _vm.StatuszUzenet = "Ezt te vitted! Hívhatsz.";
                     _vm.JatekosPont += _vm.EllensegHivottLap.pont + _vm.JatekosHivottLap.pont;
-                    // mark trick won
+                    // Bejegyezzük, hogy hoztunk egy ütést
                     _vm.JatekosNyertUtesek++;
                 }
                 else
                 {
-                    _vm.StatuszUzenet = "A Gep vitte az utest! O hiv...";
+                    _vm.StatuszUzenet = "A Gép vitte az ütést! ? hív...";
                     _vm.EllensegPont += _vm.EllensegHivottLap.pont + _vm.JatekosHivottLap.pont;
                     _vm.EllensegNyertUtesek++;
                 }
 
-                // One more trick evaluated
+                // Számoljuk, hányadik ütés volt (els? után már nincs snapszer és nyertem meg taloncsere)
                 _vm.KiertekeltUtesek++;
-                // After first trick, snapszer is no longer allowed
                 if (_vm.KiertekeltUtesek > 0)
                 {
                     _vm.LehetSnapszer = false;
                 }
 
-                // If either side declared snapszer, check success/failure immediately
+                // Ha valaki bemondta a snapszert, nézzük meg bebukta-e
                 if (_vm.PlayerDeclaredSnapszer || _vm.EnemyDeclaredSnapszer)
                 {
-                    // Játékos mondott be snapszert és bukta
+                    // Ha mi mondtuk a snapszert, de nem visszük az ütést -> azonnal bukta
                     if (_vm.PlayerDeclaredSnapszer && !enVittem)
                     {
                         const int TotalPointsInGame = 120;
@@ -346,7 +352,7 @@ namespace SnapszerGame
                         _vm.EllensegPont += remaining;
                         _vm.Pakli.SumRemainingPointsAndClear();
                         
-                        _vm.MerkozesNyertEllenseg += 7; // Bukott snapszer az ellenfélnek 7 pont
+                        _vm.MerkozesNyertEllenseg += 7; // Bukott snapszer vastagon 7 pontot ad ellennek
                         
                         _vm.EllensegHivottLap = null;
                         _vm.JatekosHivottLap = null;
@@ -358,7 +364,7 @@ namespace SnapszerGame
                         return;
                     }
 
-                    // Gép mondott snapszert és bukta (te vittél ütést)
+                    // A gép mondott snapszert, és mi hoztuk az ütést -> bed?lt a gépi snapszer, hurrá!
                     if (_vm.EnemyDeclaredSnapszer && enVittem)
                     {
                         const int TotalPointsInGame = 120;
@@ -367,7 +373,7 @@ namespace SnapszerGame
                         _vm.JatekosPont += remaining;
                         _vm.Pakli.SumRemainingPointsAndClear();
                         
-                        _vm.MerkozesNyertJatekos += 7; // Bukott snapszer gép részr?l neked 7 pont
+                        _vm.MerkozesNyertJatekos += 7; // Hopp, egy ingyen 7-es
                         
                         _vm.EllensegHivottLap = null;
                         _vm.JatekosHivottLap = null;
@@ -379,7 +385,7 @@ namespace SnapszerGame
                         return;
                     }
 
-                    // Játékos sikeres snapszer (elfogytak a lapok és nem vesztett ütést)
+                    // Ha a mi snapszerünk hibátlan és elfogytak a lapjaink (tehát minden kört elvittünk)
                     if (_vm.PlayerDeclaredSnapszer && enVittem && _vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0)
                     {
                         const int TotalPointsInGame = 120;
@@ -387,7 +393,7 @@ namespace SnapszerGame
                         if (remaining < 0) remaining = 0;
                         _vm.JatekosPont += remaining;
                         
-                        _vm.MerkozesNyertJatekos += 7; // Sikeres snapszer 7 pont
+                        _vm.MerkozesNyertJatekos += 7; // Sikeres 7 pont
                         if (_vm.EllensegPont >= 33) _vm.MerkozesNyertEllenseg += 1;
                         
                         _vm.PakliLezarasa();
@@ -396,7 +402,7 @@ namespace SnapszerGame
                         return;
                     }
 
-                    // Gép sikeres snapszer
+                    // Ugyanez a gépre nézve
                     if (_vm.EnemyDeclaredSnapszer && !enVittem && _vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0)
                     {
                         const int TotalPointsInGame = 120;
@@ -404,7 +410,7 @@ namespace SnapszerGame
                         if (remaining < 0) remaining = 0;
                         _vm.EllensegPont += remaining;
                         
-                        _vm.MerkozesNyertEllenseg += 7; // Gép sikeres snapszer 7 pont
+                        _vm.MerkozesNyertEllenseg += 7; // Gép 7 pontos gy?zelme
                         if (_vm.JatekosPont >= 33) _vm.MerkozesNyertJatekos += 1;
 
                         _vm.Pakli.SumRemainingPointsAndClear();
@@ -415,11 +421,11 @@ namespace SnapszerGame
                     }
                 }
 
-                // Takaritas az asztalrol
+                // Takarítás az asztalról az értékelés után
                 _vm.EllensegHivottLap = null;
                 _vm.JatekosHivottLap = null;
 
-                // Huzas
+                // Mindketten húzunk egyet, aki vitte az ütést az húz el?ször
                 var pT = _vm.Pakli.Huzas();
                 if (pT != null)
                 {
@@ -439,7 +445,7 @@ namespace SnapszerGame
                 }
                 else
                 {
-                    _vm.PakliLezarasa(); // Nincs tobb húzni valo
+                    _vm.PakliLezarasa(); // Nincs több lap, zár a pakli, mától kötelez? színt rakni
                 }
                 
                 GyozveEllenorzes(enVittem);
@@ -461,53 +467,50 @@ namespace SnapszerGame
 
          private void GyozveEllenorzes(bool isUtolsoBekerult = false)
          {
-             if (!_jatekFolyamatban) return; // mar vege
+             if (!_jatekFolyamatban) return; // Ha már vége, ne spammeljünk
 
-             // Jatek Vege Ellenorzes
+             // Checkeljük hogy valakinek megvan-e a 66 pont, vagy elfogytak-e a lapok
              if (_vm.JatekosPont >= 66 || _vm.EllensegPont >= 66 || (_vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0))
              {
                  _jatekFolyamatban = false;
                  _vm.EnKovetkezem = false;
 
-                 // Utolso utes szabaly extra pont - ha a pakli ures volt és most fogyott el, az kap +10-et
+                 // Aki az utolsó lapot leviszi az 10 bónuszt kap (ha nem értük még el a 66-ot különben is)
                  if (_vm.JatekosLapok.Count == 0 && _vm.EllensegLapok.Count == 0 && _vm.JatekosPont < 66 && _vm.EllensegPont < 66)
                  {
                      if(isUtolsoBekerult) _vm.JatekosPont += 10;
                      else _vm.EllensegPont += 10;
                  }
 
-                 // Silent snapszer (csendes snapszer): if nobody declared snapszer but one player won all tricks (opponent won 0), award extra bonus
-                 const int SilentSnapszerBonus = 30; // configurable bonus for silent snapszer
+                 // Csendes snapszer: ha úgy vitt el egy játékos mindent, hogy nem mondott rá snapszert
+                 const int SilentSnapszerBonus = 30; // Erre a plusz bünti pontra érdemes odafigyelni
                  if (!_vm.PlayerDeclaredSnapszer && !_vm.EnemyDeclaredSnapszer)
                  {
                      if (_vm.EllensegNyertUtesek == 0 && _vm.KiertekeltUtesek > 0 && _vm.JatekosNyertUtesek == _vm.KiertekeltUtesek)
                      {
                          _vm.JatekosPont += SilentSnapszerBonus;
-                         _vm.StatuszUzenet = "Csendes snapszer: plusz pont a vegelsozamolasnal.";
+                         _vm.StatuszUzenet = "Csendes snapszer: plusz pont a végelszámolásnál.";
                      }
                      else if (_vm.JatekosNyertUtesek == 0 && _vm.KiertekeltUtesek > 0 && _vm.EllensegNyertUtesek == _vm.KiertekeltUtesek)
                      {
                          _vm.EllensegPont += SilentSnapszerBonus;
-                         _vm.StatuszUzenet = "Gep csendes snapszert ert el; extra pontot kapott.";
+                         _vm.StatuszUzenet = "Gép csendes snapszert ért el; extra pontot kapott.";
                      }
                  }
 
                  if (_vm.JatekosPont >= 66 || _vm.JatekosPont > _vm.EllensegPont)
                  {
-                     _vm.StatuszUzenet = $"NYERTEL! Eredmeny: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gep.";
-                     // MessageBox eltávolítva 
+                     _vm.StatuszUzenet = $"NYERTEL! Eredmény: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gép.";
                  }
                  else
                  {
-                     _vm.StatuszUzenet = $"VESZTETTEL! Eredmeny: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gep.";
-                     // MessageBox eltávolítva
+                     _vm.StatuszUzenet = $"VESZTETTÉL! Eredmény: Te {_vm.JatekosPont} - {_vm.EllensegPont} Gép.";
                  }
 
-                 // Vissza a fomenube
-                 // Helyette uj koret inditunk pontokkal
+                 // Ideje osztani a meccspontokat
                  if (_vm.JatekosPont >= 66 || _vm.JatekosPont > _vm.EllensegPont)
                  {
-                     _vm.MerkozesNyertJatekos += 2; // Sima gyozelem 2 pont
+                     _vm.MerkozesNyertJatekos += 2; // Sima gy?zelem mindig 2 pont
                      if (_vm.EllensegPont >= 33) _vm.MerkozesNyertEllenseg += 1;
 
                      ShowRoundResultWithPrompt("Kör megnyerve!", $"Kaptál 2 pontot. (Gép: {(_vm.EllensegPont >= 33 ? "+1" : "0")} pont)", true);
@@ -553,22 +556,22 @@ namespace SnapszerGame
                 return;
             }
 
-            // Prepare next round (keep match counters)
+            // Letisztítjuk a placcot a kövibe
             _vm.ResetRoundState();
             _vm.Pakli = new KartyaCsomag();
             _vm.Pakli.PakliKeveres();
 
-            // Deal 5 cards each
+            // Ujra kirakunk mindenkit
             for (int i = 0; i < 5; i++)
             {
                 var p = _vm.Pakli.Huzas(); if (p != null) { _vm.JatekosLapok.Add(p); _vm.NotifyCardDrawn(p); }
                 var e = _vm.Pakli.Huzas(); if (e != null) { _vm.EllensegLapok.Add(e); _vm.NotifyCardDrawn(e); }
             }
 
-            // Update talon
+            // Talon fixálás
             _vm.FelforditottKartya = _vm.Pakli.PeekLast();
 
-            // Randomly choose who starts next round
+            // Véletlenszer?en d?l el, ki kezdi most
             bool playerStarts = new Random().Next(2) == 0;
             if (playerStarts)
             {
@@ -588,25 +591,25 @@ namespace SnapszerGame
 
          private async Task MutassBemondasAnimaciot(bool is40, bool toPlayer = true)
          {
-            // Set message and suspend interaction for a short time to show animation
+            // Kiírjuk a szöveget és leállunk picinyt, hogy a user elolvashassa
             if (is40)
             {
-                BemondasText.Text = "BEMONDAS: 40";
+                BemondasText.Text = "BEMONDÁS: 40";
             }
             else
             {
-                BemondasText.Text = "BEMONDAS: 20";
+                BemondasText.Text = "BEMONDÁS: 20";
             }
 
             BemondasSzinText.Text = _vm.LastBemondottSzin?.ToString() ?? string.Empty;
 
-            var sbShow = (Storyboard)FindResource("BemondasAppear");
-            var sbHide = (Storyboard)FindResource("BemondasDisappear");
+            var sbShow = (Storyboard)FindResource("BemonasAppear");
+            var sbHide = (Storyboard)FindResource("BemonasDisappear");
 
             BemondasPanel.BeginStoryboard(sbShow);
             BemondasPanel.BeginStoryboard(sbHide);
 
-            // Also animate a card moving from PakliImage to center table by temporarily creating a flying Image
+            // Csinálunk egy álkártyát, ami átrepül a pakliból az asztalra
             if (_vm.PakliVisibility == Visibility.Visible)
             {
                 var img = new Image()
@@ -619,7 +622,7 @@ namespace SnapszerGame
 
                 var root = (Grid)this.Content;
 
-                // Ensure we have an overlay canvas
+                // Rákerül egy invisible overlay
                 Canvas overlay = null;
                 foreach (var child in root.Children)
                 {
@@ -633,12 +636,11 @@ namespace SnapszerGame
 
                 overlay.Children.Add(img);
 
-                // Position image at PakliImage location (relative to window)
+                // Indítunk rajta egy mozgás animet középre
                 var pakliPos = PakliImage.TransformToAncestor(this).Transform(new System.Windows.Point(0, 0));
                 Canvas.SetLeft(img, pakliPos.X);
                 Canvas.SetTop(img, pakliPos.Y);
 
-                // Animate to center (table area center)
                 var center = new System.Windows.Point((this.ActualWidth / 2) - img.Width / 2, (this.ActualHeight / 2) - img.Height / 2);
 
                 var leftAnim = new DoubleAnimation(pakliPos.X, center.X, new Duration(System.TimeSpan.FromMilliseconds(900)));
@@ -651,7 +653,7 @@ namespace SnapszerGame
                 {
                     overlay.Children.Remove(img);
 
-                    // Give extra card to the announcer
+                    // A megkapott plusz lap bekerül a játszó kezébe
                     var extra = _vm.Pakli.Huzas();
                     if (extra != null)
                     {
@@ -667,7 +669,6 @@ namespace SnapszerGame
                     }
                 };
 
-                // Apply animations via Storyboard targeting Canvas.Left/Top
                 var sb = new Storyboard();
                 sb.Children.Add(leftAnim);
                 sb.Children.Add(topAnim);

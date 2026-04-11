@@ -9,7 +9,7 @@ namespace SnapszerGame.game
 {
     public class GameViewModel : INotifyPropertyChanged
     {
-        // Pakli és kezek
+        // Pakli és kezek, a nyers adatok a játéktérhez
         public KartyaCsomag Pakli { get; set; }
         public ObservableCollection<Card> JatekosLapok { get; set; } = new ObservableCollection<Card>();
         public ObservableCollection<Card> EllensegLapok { get; set; } = new ObservableCollection<Card>();
@@ -21,14 +21,14 @@ namespace SnapszerGame.game
             set { _kartya = value; OnPropertyChanged(nameof(FelforditottKartya)); }
         }
 
-        // Körpontok
+        // Aktuális kör pontszámai
         private int _jatekosPont;
         public int JatekosPont { get => _jatekosPont; set { _jatekosPont = value; OnPropertyChanged(nameof(JatekosPont)); } }
 
         private int _ellensegPont;
         public int EllensegPont { get => _ellensegPont; set { _ellensegPont = value; OnPropertyChanged(nameof(EllensegPont)); } }
 
-        // Adu
+        // Az adu cuccai
         private Szin _aduSzin;
         private string _aduImagePath = string.Empty;
         private bool _hasAduChosen = false;
@@ -54,7 +54,7 @@ namespace SnapszerGame.game
         private bool _enKovetkezem;
         public bool EnKovetkezem { get => _enKovetkezem; set { _enKovetkezem = value; OnPropertyChanged(nameof(EnKovetkezem)); } }
 
-        // Bemondások lehetősége
+        // Bemondások engedélyezése gombokhoz
         private bool _lehet20Bemondani;
         public bool Lehet20Bemondani { get => _lehet20Bemondani; set { _lehet20Bemondani = value; OnPropertyChanged(nameof(Lehet20Bemondani)); } }
 
@@ -67,14 +67,14 @@ namespace SnapszerGame.game
         private bool _pakliLezarva;
         public bool PakliLezarva { get => _pakliLezarva; set { _pakliLezarva = value; OnPropertyChanged(nameof(PakliLezarva)); } }
 
-        // Lerakott lapok
+        // Asztalra rakott lapok egyetlen körre
         private Card _jatekosHivottLap;
         public Card JatekosHivottLap { get => _jatekosHivottLap; set { _jatekosHivottLap = value; OnPropertyChanged(nameof(JatekosHivottLap)); } }
 
         private Card _ellensegHivottLap;
         public Card EllensegHivottLap { get => _ellensegHivottLap; set { _ellensegHivottLap = value; OnPropertyChanged(nameof(EllensegHivottLap)); } }
 
-        // Üzenetek
+        // Szöveg kiírások a UI-nak
         private string _statuszUzenet = string.Empty;
         public string StatuszUzenet { get => _statuszUzenet; set { _statuszUzenet = value; OnPropertyChanged(nameof(StatuszUzenet)); } }
 
@@ -92,7 +92,7 @@ namespace SnapszerGame.game
 
         public IEnumerable<Szin> BemondottSzinek => _beMondottSzinek;
 
-        // Snapszer és talon
+        // Snapszer gomb és talon csere toggle
         private bool _lehetSnapszer;
         public bool LehetSnapszer { get => _lehetSnapszer; set { _lehetSnapszer = value; OnPropertyChanged(nameof(LehetSnapszer)); } }
 
@@ -108,6 +108,7 @@ namespace SnapszerGame.game
         private int _ellensegNyertUtesek = 0;
         public int EllensegNyertUtesek { get => _ellensegNyertUtesek; set { _ellensegNyertUtesek = value; OnPropertyChanged(nameof(EllensegNyertUtesek)); } }
 
+        // Beállítja hányszor volt már fix ütés
         private int _kiertekeltUtesek = 0;
         public int KiertekeltUtesek { get => _kiertekeltUtesek; set { _kiertekeltUtesek = value; OnPropertyChanged(nameof(KiertekeltUtesek)); } }
 
@@ -117,14 +118,14 @@ namespace SnapszerGame.game
         private bool _talonTaken = false;
         public bool TalonTaken { get => _talonTaken; set { _talonTaken = value; OnPropertyChanged(nameof(TalonTaken)); } }
 
-        // Meccspontok
+        // Meccsek megnyerésére adott pontszámok (a táblán lévő "Merkozes" alatt)
         private int _meccsPontJatekos = 0;
         public int MeccsPontJatekos { get => _meccsPontJatekos; set { _meccsPontJatekos = value; OnPropertyChanged(nameof(MeccsPontJatekos)); } }
 
         private int _meccsPontEllenseg = 0;
         public int MeccsPontEllenseg { get => _meccsPontEllenseg; set { _meccsPontEllenseg = value; OnPropertyChanged(nameof(MeccsPontEllenseg)); } }
         
-        // Nyert meccsek = Merkozes
+        // Hivatkozások a meccspontokra, így egyezni fog a xaml-el
         public int MerkozesNyertJatekos { get => _meccsPontJatekos; set { _meccsPontJatekos = value; OnPropertyChanged(nameof(MerkozesNyertJatekos)); OnPropertyChanged(nameof(MeccsPontJatekos)); } }
         public int MerkozesNyertEllenseg { get => _meccsPontEllenseg; set { _meccsPontEllenseg = value; OnPropertyChanged(nameof(MerkozesNyertEllenseg)); OnPropertyChanged(nameof(MeccsPontEllenseg)); } }
 
@@ -137,7 +138,7 @@ namespace SnapszerGame.game
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        // Konstruktor: reagál a kéz változására
+        // Konstruktor: bekötjük a kéz frissítést, ha a lapok változnának
         public GameViewModel()
         {
             JatekosLapok.CollectionChanged += JatekosLapok_CollectionChanged;
@@ -149,7 +150,7 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
         }
 
-        // Játék előkészítése
+        // Letisztarítjuk a gép/játékos kezét, ujra paklizunk
         public bool PrepareGameStart()
         {
             Pakli = new KartyaCsomag();
@@ -180,13 +181,13 @@ namespace SnapszerGame.game
             EllensegNyertUtesek = 0;
             KiertekeltUtesek = 0;
 
-            // Merkozes nullázása új játéknál
+            // Új játéknál nulláról indítjuk a meccs statját
             MerkozesNyertJatekos = 0;
             MerkozesNyertEllenseg = 0;
 
             FrissitBemondasLehetoseg();
 
-            // Csak az első körben engedjük a 'snapszer' és 'nyertem' bejelentést
+            // Szigorúan az első körben mehet csak a snapszer és a nyertem gomb használata
             RoundIndex = 1;
             LehetSnapszer = (RoundIndex == 1);
             LehetNyertem = (RoundIndex == 1);
@@ -194,7 +195,7 @@ namespace SnapszerGame.game
             return enKezdek;
         }
 
-        // Új ütés indításakor
+        // Tiszta lappal indul a kövi ütés
         public void StartNewTrick()
         {
             _beMondottSzinek.Clear();
@@ -204,11 +205,11 @@ namespace SnapszerGame.game
 
             if (KiertekeltUtesek > 0)
             {
-                LehetSnapszer = false; // miután értékeltünk, snapszer nem lehetséges
+                LehetSnapszer = false; // Ha volt már ütés, a snapszer storno
             }
         }
 
-        // Gyors indítás (nincs animáció)
+        // Egy gyors indítós logikázás anims nélkül (lehet elhagyható lesz később)
         public void JatekInditasa()
         {
             bool enKezdek = PrepareGameStart();
@@ -242,13 +243,14 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
         }
 
+        // Becsukja a kaput, ahonnan még lehetett húzni
         public void PakliLezarasa()
         {
             PakliLezarva = true;
             PakliVisibility = Visibility.Collapsed;
         }
 
-        // Ha lapot huztak, jelezzük (talon kezeléshez)
+        // Figyeljük miből fogy, és ha kiveszik a talont, a cserét lekapcsoljuk
         public void NotifyCardDrawn(Card drawn)
         {
             if (drawn == null) return;
@@ -260,7 +262,7 @@ namespace SnapszerGame.game
             }
         }
 
-        // UI frissítés, bemondási lehetőségek kiszámítása
+        // Kiszámolja épp mire van joga a usernek rányomni bemondások terén
         public void FrissitBemondasLehetoseg()
         {
             if (!BemondasEngedelyezett)
@@ -286,13 +288,13 @@ namespace SnapszerGame.game
             LehetSnapszer = (RoundIndex == 1) && (KiertekeltUtesek == 0) && !PlayerDeclaredSnapszer && !EnemyDeclaredSnapszer;
             LehetTalonCsere = !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
 
-            // Nyertem: öt lap, összesen 66 pont, csak első körben
+            // A "Nyertem" gomb fura szabálya: kell 5 lap es összesen kapd el a 66-ot belőle
             LehetNyertem = (RoundIndex == 1) && (KiertekeltUtesek == 0) && JatekosLapok.Count == 5 && JatekosLapok.Sum(c => c.pont) == 66;
         }
 
         public void ResetRoundState()
         {
-            // Következő kör beállításai
+            // Fullos lenullázás mielőtt belevágunk a kövi roundba
             RoundIndex++;
             JatekosPont = 0;
             EllensegPont = 0;
@@ -314,6 +316,7 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
         }
 
+        // A user betolja a 40 vagy 20-at
         public void Bemond(bool is40)
         {
             if (!BemondasEngedelyezett) return;
@@ -332,6 +335,7 @@ namespace SnapszerGame.game
             }
         }
 
+        // Ugyanez csak a backend bot srácnak
         public void EnemyBemond(Szin szin, bool is40)
         {
             if (!BemondasEngedelyezett) return;
@@ -343,6 +347,7 @@ namespace SnapszerGame.game
             FrissitBemondasLehetoseg();
         }
 
+        // Megnyomta valaki a snapszert, most aztán durvulás lesz
         public void DeclareSnapszer(bool player)
         {
             if (player) PlayerDeclaredSnapszer = true; else EnemyDeclaredSnapszer = true;

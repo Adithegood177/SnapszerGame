@@ -7,14 +7,14 @@ namespace SnapszerGame.game
 {
     public class SnapszerLogic
     {
-        // Helper ranking for trick-taking (separate from scoring points).
-        // Higher number = higher rank in trick-taking.
+        // Segédfüggvény, hogy be tudjuk állítani mi is veri a másikat egy ütésben (mert ez nem mindig pont alapján megy)
+        // Amelyiknek nagyobb az értéke, az a lap erősebb.
         private int RankValue(Ertek e)
         {
             return e switch
             {
                 Ertek.Asz => 6,
-                Ertek.Kiraly => 5, // King now ranks above Ten
+                Ertek.Kiraly => 5, // Itt a király azért veri a tízest ütésben, hogy simábban menjen
                 Ertek.Tiz => 4,
                 Ertek.Felsokiraly => 3,
                 Ertek.Alsokiraly => 2,
@@ -23,50 +23,52 @@ namespace SnapszerGame.game
             };
         }
 
+        // Kitalálja kié lett az ütés a két lerakott lap alapján
         public Player GetWinnerOfTrick(Card hivottLap, Card valaszLap, Player hivoJatekos, Player valaszoloJatekos, Szin aduSzin)
         {
-            // If the responder played trump while leader didn't, responder wins
+            // Ha a válaszoló rávágta az adut, a hívó viszont csak simát tett
             if (valaszLap.szin == aduSzin && hivottLap.szin != aduSzin)
             {
                 return valaszoloJatekos;
             }
 
-            // If leader played trump and responder didn't, leader wins
+            // Fordítva: ha a hívó aduzott egyet, a válaszoló meg nem
             if (hivottLap.szin == aduSzin && valaszLap.szin != aduSzin)
             {
                 return hivoJatekos;
             }
 
-            // If both cards are of same suit (including both trump), compare rank using RankValue
+            // Ha mindkettő amúgy ugyanaz a szín, akkor nézzük a ranglétrát (mert a pont itt csalóka lehetne)
             if (hivottLap.szin == valaszLap.szin)
             {
                 return (RankValue(hivottLap.ertek) > RankValue(valaszLap.ertek)) ? hivoJatekos : valaszoloJatekos;
             }
 
-            // Otherwise, if neither is trump and suits differ, the leader wins (per simplified rules)
+            // Ha sejtettem hogy különböző szín, plusz senkinek se esett az adujára a dolog, akkor azé aki hívott (a srácunk egyszerű szabálya szerint)
             return hivoJatekos;
         }
 
-        // Per user request: do not force following suit when the deck is closed; allow playing any card (trump may be played on anything).
+        // Itt döntjük el, mit szabad lerakni a srácnak. A user szólt h ne basztassuk a színre színt ha nem muszáj.
         public bool SzabalyosKartyaRakas(Card lerakandoKartya, Card hivottLap, Szin aduSzin, bool pakliLezarva, IEnumerable<Card> jatekosKezeben)
         {
-            // If there is no leading card, any card can be played
+            // Ha elsőnek hívunk, ami jólesik, azt dobjuk
             if (hivottLap == null)
             {
                 return true;
             }
 
-            // If the deck is not closed, free play (no obligation)
+            // Ameddig kint a pakli vége, a szabad világ dübörög
             if (!pakliLezarva)
             {
                 return true;
             }
 
-            // When the deck is closed, per the requested rule we do not enforce following-suit.
-            // Trump can be played on any card and players are free to choose any card.
+            // Mikor már elfogyott a húzó, a kérés szerint kiment a színre szín kötelezettség is az ablakon
+            // Szinte akármit rávágunk, boldogok vagyunk.
             return true;
         }
 
+        // Lecsekkolja a bemákolt király-felső kombókat kézben
         public List<Szin> LehetsegesBemondasok(IEnumerable<Card> jatekosKezeben)
         {
             var bemondasok = new List<Szin>();

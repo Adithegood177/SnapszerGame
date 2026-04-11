@@ -267,7 +267,7 @@ namespace SnapszerGame.game
             {
                 Lehet20Bemondani = false;
                 Lehet40Bemondani = false;
-                LehetTalonCsere = (KiertekeltUtesek == 0) && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
+                LehetTalonCsere = !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
                 return;
             }
 
@@ -284,7 +284,7 @@ namespace SnapszerGame.game
             }
 
             LehetSnapszer = (RoundIndex == 1) && (KiertekeltUtesek == 0) && !PlayerDeclaredSnapszer && !EnemyDeclaredSnapszer;
-            LehetTalonCsere = (KiertekeltUtesek == 0) && !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
+            LehetTalonCsere = !TalonTaken && JatekosLapok.Any(c => c.szin == AduSzin && c.ertek == Ertek.Alsokiraly);
 
             // Nyertem: öt lap, összesen 66 pont, csak első körben
             LehetNyertem = (RoundIndex == 1) && (KiertekeltUtesek == 0) && JatekosLapok.Count == 5 && JatekosLapok.Sum(c => c.pont) == 66;

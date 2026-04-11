@@ -329,7 +329,19 @@
                             </Border.Triggers>
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                                 <TextBlock Text="TALON" Foreground="#FFD700" FontFamily="Georgia" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6" />
-                                <Image Source="{Binding FelforditottKartya.ImagePath}" Width="72" Height="108" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+                                <Image Source="{Binding FelforditottKartya.ImagePath}" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+                                    <Image.Width>
+                                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.10;1.0">
+                                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                        </MultiBinding>
+                                    </Image.Width>
+                                    <Image.Height>
+                                        <MultiBinding Converter="{StaticResource CardSize}" ConverterParameter="0.15;1.0">
+                                            <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                            <Binding Path="DataContext.HasAduChosen" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                        </MultiBinding>
+                                    </Image.Height>
                                     <Image.RenderTransform>
                                         <RotateTransform Angle="-12" />
                                     </Image.RenderTransform>

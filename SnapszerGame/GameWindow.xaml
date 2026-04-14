@@ -19,7 +19,7 @@
 
         <Storyboard x:Key="BemondasDisappear">
             <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" BeginTime="0:0:3.5" Duration="0:0:0.5" />
-            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:3.5" Duration="0:0:0.5" />
+            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="0" To="-20" BeginTime="0:0:3.5" Duration="0:0:0.5" />
         </Storyboard>
 
         <!-- Talon hover animations -->

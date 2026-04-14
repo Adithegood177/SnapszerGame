@@ -37,23 +37,27 @@ namespace SnapszerGame.game
                     _ => ertek.ToString().ToLower()
                 };
 
-                // Use explicit component pack URI so WPF reliably finds the resource in this assembly
+                // Összerakja a kép elérési útját → innen húzza be a kártyaképet
                 return $"/SnapszerGame;component/kartyak/{s}_{e}.png";
             }
         }
 
+        //konstruktor létrehozza a kártyát a megadott színnel és értékkel
         public Card(Szin szin, Ertek ertek)
         {
             this._szin = szin;
             this._ertek = ertek;
         }
 
+        //kiiras pl piros asz
         public override string ToString()
         {
             return $"{szin} {ertek}";
         }
-
+        //rendszer update, ha a kártya tulajdonságai megváltoznak, értesíti a UI-t, hogy frissítse a megjelenést
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        // Triggereli a frissítést bratyesz olyat szól pl: "hé UI, ez megváltozott!"
         protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
     }
 }

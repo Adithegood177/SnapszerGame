@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SnapszerGame
 {
-    // Converts a numeric value by multiplying with ConverterParameter (double)
+    // megszoroz egy értéket egy faktorral méretezéshez pl
     public class MultiplyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

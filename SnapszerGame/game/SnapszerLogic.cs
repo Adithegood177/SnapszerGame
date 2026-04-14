@@ -87,7 +87,7 @@ namespace SnapszerGame.game
 
             return bemondasok;
         }
-
+        // Megmondja mennyit ér a bemondás
         public int BemondasErteke(Szin bemondottSzin, Szin aduSzin)
         {
             return (bemondottSzin == aduSzin) ? 40 : 20;

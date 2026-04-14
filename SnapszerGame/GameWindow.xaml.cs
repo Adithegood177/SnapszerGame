@@ -98,7 +98,7 @@ namespace SnapszerGame
             _jatekFolyamatban = true;
         }
 
-        // --- ÚJ GOMB ---
+        // new button, szabályzatot nyitja meg
         private void SzabalyzatGomb_Click(object sender, RoutedEventArgs e)
         {
             var win = new SzabalyzatWindow();
@@ -433,7 +433,7 @@ namespace SnapszerGame
                 {
                     _vm.PakliLezarasa(); // Nincs több lap, zár a pakli, mától kötelez? színt rakni
                 }
-                
+                //megnezi hogy nyertünk-e
                 GyozveEllenorzes(enVittem);
 
                 if (_jatekFolyamatban)
@@ -510,7 +510,7 @@ namespace SnapszerGame
                  }
              }
          }
-
+        //kiírja mi lett az eredmény, aztán megkérdezi nyomjuk-e tovább
          private void ShowRoundResultWithPrompt(string title, string subtitle, bool playerWon)
          {
              var result = MessageBox.Show($"{title}\n{subtitle}\n\nSzeretnél új kört kezdeni? (Nem = Kilépés)", 

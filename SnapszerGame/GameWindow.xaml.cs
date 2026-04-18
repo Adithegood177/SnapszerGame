@@ -6,6 +6,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Linq; // LINQ for Sum
+using System.IO;
 
 namespace SnapszerGame
 {
@@ -14,6 +15,9 @@ namespace SnapszerGame
         private GameViewModel _vm;
         private Enemy _gep;
         private bool _jatekFolyamatban = false;
+        private MediaPlayer _shufflePlayer = new MediaPlayer();
+        private MediaPlayer _drawPlayer = new MediaPlayer();
+        private Random _rnd = new Random();
 
         public GameWindow(GameViewModel vm)
         {
@@ -21,6 +25,21 @@ namespace SnapszerGame
             this.DataContext = vm;
             _vm = vm;
             _gep = new Enemy(new SnapszerLogic());
+            
+            // Hangok előkészítése
+            _shufflePlayer.Open(new System.Uri(Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "hangfileok", "card_shuffle.mp3")));
+        }
+        
+        private void PlayRandomDrawSound()
+        {
+            int drawSoundNum = _rnd.Next(1, 5); // 1-től 4-ig
+            string soundPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "hangfileok", $"card_draw{drawSoundNum}.MP3");
+            try
+            {
+                _drawPlayer.Open(new System.Uri(soundPath));
+                _drawPlayer.Play();
+            }
+            catch { } // Ha nincs meg a file, ne szálljon el
         }
 
         // Osztás animálása: felváltva kapjuk a lapokat, majd ha a játékos kezd, kérjük be az adut
@@ -36,21 +55,21 @@ namespace SnapszerGame
                 if (playerStarts)
                 {
                     var pcard = _vm.Pakli.Huzas();
-                    if (pcard != null) { _vm.JatekosLapok.Add(pcard); _vm.NotifyCardDrawn(pcard); }
+                    if (pcard != null) { _vm.JatekosLapok.Add(pcard); _vm.NotifyCardDrawn(pcard); PlayRandomDrawSound(); }
                     await Task.Delay(250);
 
                     var ecard = _vm.Pakli.Huzas();
-                    if (ecard != null) { _vm.EllensegLapok.Add(ecard); _vm.NotifyCardDrawn(ecard); }
+                    if (ecard != null) { _vm.EllensegLapok.Add(ecard); _vm.NotifyCardDrawn(ecard); PlayRandomDrawSound(); }
                     await Task.Delay(250);
                 }
                 else
                 {
                     var ecard = _vm.Pakli.Huzas();
-                    if (ecard != null) { _vm.EllensegLapok.Add(ecard); _vm.NotifyCardDrawn(ecard); }
+                    if (ecard != null) { _vm.EllensegLapok.Add(ecard); _vm.NotifyCardDrawn(ecard); PlayRandomDrawSound(); }
                     await Task.Delay(250);
 
                     var pcard = _vm.Pakli.Huzas();
-                    if (pcard != null) { _vm.JatekosLapok.Add(pcard); _vm.NotifyCardDrawn(pcard); }
+                    if (pcard != null) { _vm.JatekosLapok.Add(pcard); _vm.NotifyCardDrawn(pcard); PlayRandomDrawSound(); }
                     await Task.Delay(250);
                 }
             }
@@ -253,7 +272,8 @@ namespace SnapszerGame
             // Kivesszük az alsót a kezünkb?l, s a helyére bemegy a felhúzott lap
             _vm.JatekosLapok.Remove(playerAlsokiraly);
             _vm.JatekosLapok.Add(oldLast);
-
+            PlayRandomDrawSound(); // Húzós hang a cserénél is
+            
             // Szólunk a UI-nak, hogy alul a talon már másik lap lett
             _vm.FelforditottKartya = oldLast;
 
@@ -285,7 +305,7 @@ namespace SnapszerGame
 
             Player nyertes;
 
-            // Akkor értékelünk, ha már tényleg mind a két lap lenn van
+            // Akkor értékelünk, ha már tényleg mind a két lap benn van
             if (_vm.EllensegHivottLap != null && _vm.JatekosHivottLap != null)
             {
                 bool enHivtam = _vm.EllensegHivottLap != null && _vm.JatekosHivottLap != null && _vm.StatuszUzenet.Contains("valaszol");
@@ -418,15 +438,27 @@ namespace SnapszerGame
                     _vm.NotifyCardDrawn(pT);
                     if (enVittem)
                     {
+                        await HuzasAnimacio(true); // Játékos húz
                         _vm.JatekosLapok.Add(pT);
                         var eT = _vm.Pakli.Huzas();
-                        if (eT != null) { _vm.EllensegLapok.Add(eT); _vm.NotifyCardDrawn(eT); }
+                        if (eT != null) 
+                        { 
+                            await HuzasAnimacio(false); // Gép húz
+                            _vm.EllensegLapok.Add(eT); 
+                            _vm.NotifyCardDrawn(eT); 
+                        }
                     }
                     else
                     {
+                        await HuzasAnimacio(false); // Gép húz
                         _vm.EllensegLapok.Add(pT);
                         var eT = _vm.Pakli.Huzas();
-                        if (eT != null) { _vm.JatekosLapok.Add(eT); _vm.NotifyCardDrawn(eT); }
+                        if (eT != null) 
+                        { 
+                            await HuzasAnimacio(true); // Játékos húz
+                            _vm.JatekosLapok.Add(eT); 
+                            _vm.NotifyCardDrawn(eT); 
+                        }
                     }
                 }
                 else
@@ -518,6 +550,7 @@ namespace SnapszerGame
                                           MessageBoxButton.YesNo, 
                                           MessageBoxImage.Question);
              
+
              if (result == MessageBoxResult.Yes)
              {
                  EndRound(playerWon);
@@ -546,12 +579,24 @@ namespace SnapszerGame
             _vm.ResetRoundState();
             _vm.Pakli = new KartyaCsomag();
             _vm.Pakli.PakliKeveres();
+            
+            // Játsszuk le a keverés animációt
+            var shuffleAnim = (Storyboard)FindResource("ShuffleAnimation");
+            if (shuffleAnim != null)
+            {
+                _shufflePlayer.Position = System.TimeSpan.Zero;
+                _shufflePlayer.Play();
+                shuffleAnim.Begin(PakliImage);
+                await Task.Delay(1800); // 3x 0.6 mp = 1.8 másodperc a keverés
+            }
 
             // Ujra kirakunk mindenkit
             for (int i = 0; i < 5; i++)
             {
-                var p = _vm.Pakli.Huzas(); if (p != null) { _vm.JatekosLapok.Add(p); _vm.NotifyCardDrawn(p); }
-                var e = _vm.Pakli.Huzas(); if (e != null) { _vm.EllensegLapok.Add(e); _vm.NotifyCardDrawn(e); }
+                var p = _vm.Pakli.Huzas(); if (p != null) { _vm.JatekosLapok.Add(p); _vm.NotifyCardDrawn(p); PlayRandomDrawSound(); }
+                await Task.Delay(150); // Ha egyből berakja mindet az furcsa
+                var e = _vm.Pakli.Huzas(); if (e != null) { _vm.EllensegLapok.Add(e); _vm.NotifyCardDrawn(e); PlayRandomDrawSound(); }
+                await Task.Delay(150);
             }
 
             // Talon fixálás
@@ -594,6 +639,75 @@ namespace SnapszerGame
             }
 
             _jatekFolyamatban = true;
+         }
+
+         private async Task HuzasAnimacio(bool toPlayer)
+         {
+            if (_vm.PakliVisibility == Visibility.Visible)
+            {
+                PlayRandomDrawSound(); // Húzó hang elindítása per kártya repülés
+
+                var img = new Image()
+                {
+                    Source = PakliImage.Source,
+                    Width = PakliImage.ActualWidth,
+                    Height = PakliImage.ActualHeight,
+                    RenderTransform = new TranslateTransform()
+                };
+
+                var root = (Grid)this.Content;
+
+                Canvas overlay = null;
+                foreach (var child in root.Children)
+                {
+                    if (child is Canvas c && c.Name == "_overlayCanvas") { overlay = c; break; }
+                }
+                if (overlay == null)
+                {
+                    overlay = new Canvas() { IsHitTestVisible = false, Name = "_overlayCanvas" };
+                    root.Children.Add(overlay);
+                }
+
+                overlay.Children.Add(img);
+
+                var pakliPos = PakliImage.TransformToAncestor(this).Transform(new System.Windows.Point(0, 0));
+                Canvas.SetLeft(img, pakliPos.X);
+                Canvas.SetTop(img, pakliPos.Y);
+
+                // Határozzuk meg a cél pozíciót (Játékos vagy Gép keze felé)
+                System.Windows.Point targetPos;
+                if (toPlayer)
+                {
+                    targetPos = new System.Windows.Point((this.ActualWidth / 2), this.ActualHeight); // Alul középre
+                }
+                else
+                {
+                    targetPos = new System.Windows.Point((this.ActualWidth / 2), -img.Height); // Felül középre
+                }
+
+                var leftAnim = new DoubleAnimation(pakliPos.X, targetPos.X, new Duration(System.TimeSpan.FromMilliseconds(400)));
+                var topAnim = new DoubleAnimation(pakliPos.Y, targetPos.Y, new Duration(System.TimeSpan.FromMilliseconds(400)));
+
+                leftAnim.FillBehavior = FillBehavior.Stop;
+                topAnim.FillBehavior = FillBehavior.Stop;
+
+                leftAnim.Completed += (s, e) =>
+                {
+                    overlay.Children.Remove(img);
+                };
+
+                var sb = new Storyboard();
+                sb.Children.Add(leftAnim);
+                sb.Children.Add(topAnim);
+                Storyboard.SetTarget(leftAnim, img);
+                Storyboard.SetTargetProperty(leftAnim, new PropertyPath("(Canvas.Left)"));
+                Storyboard.SetTarget(topAnim, img);
+                Storyboard.SetTargetProperty(topAnim, new PropertyPath("(Canvas.Top)"));
+
+                sb.Begin();
+
+                await Task.Delay(400); // Várjuk meg az animáció végét
+            }
          }
 
          private async Task MutassBemondasAnimaciot(bool is40, bool toPlayer = true)
@@ -664,6 +778,7 @@ namespace SnapszerGame
                     var extra = _vm.Pakli.Huzas();
                     if (extra != null)
                     {
+                        PlayRandomDrawSound(); // Húzás hang bemondás plusz bónusz osztásánál
                         _vm.NotifyCardDrawn(extra);
                         if (toPlayer)
                             _vm.JatekosLapok.Add(extra);
@@ -705,6 +820,16 @@ namespace SnapszerGame
 
              RoundResultPanel.BeginAnimation(UIElement.OpacityProperty, fadeIn);
              Task.Delay(3000).ContinueWith(_ => Dispatcher.Invoke(() => RoundResultPanel.BeginAnimation(UIElement.OpacityProperty, fadeOut)));
+         }
+
+         protected override void OnClosed(System.EventArgs e)
+         {
+             base.OnClosed(e);
+             if (this.Owner is MainWindow mainWindow)
+             {
+                 _vm.FomenLathato = Visibility.Visible;
+                 mainWindow.Show();
+             }
          }
     }
 }
